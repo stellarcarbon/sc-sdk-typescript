@@ -3,6 +3,11 @@ name: Manual Release
 
 on:
   workflow_dispatch:
+      inputs:
+      dry_run:
+        description: 'Publish dry-run? (true/false)'
+        required: true
+        default: 'true'
 
 jobs:
   release:
@@ -43,6 +48,13 @@ jobs:
 
       # 6. publiceer naar npm 
       - name: Publish to npm
-        run: npm publish --access public
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "=== DRY RUN: npm publish --dry-run ==="
+            npm publish --dry-run --access public
+          else
+            echo "=== REAL PUBLISH: npm publish ==="
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
