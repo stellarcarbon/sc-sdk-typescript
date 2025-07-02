@@ -1,10 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// scripts/sync-version.cjs
+const fs = require('fs');
+const path = require('path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Node 18+ heeft global fetch
 const OPENAPI_URL = 'https://api.stellarcarbon.io/openapi.json';
 
 async function syncVersion() {
@@ -15,12 +13,10 @@ async function syncVersion() {
   }
   const openapi = await res.json();
 
-  // 4. Read & update package.json
   const pkgPath = path.resolve(__dirname, '../package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
   pkg.version = openapi.info.version;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-
   console.log(`Synced version to ${pkg.version}`);
 }
 
@@ -28,4 +24,3 @@ syncVersion().catch(err => {
   console.error(err);
   process.exit(1);
 });
-
