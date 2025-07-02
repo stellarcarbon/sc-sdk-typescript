@@ -27,9 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 4. sync versie uit OpenAPI in package.json
-      - name: Sync version from OpenAPI
-        run: npm run sync-version
+      # 4. Versie nummer lezen
+      - name: Get version
+        id: get_version
+        run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
       # 5. commit de bijgewerkte package.json en maak een tag
       - name: Create & push tag
@@ -40,9 +41,8 @@ jobs:
           git tag -a "v$V" -m "Release v$V"
           git push origin "v$V"
 
-      # 6. publiceer naar npm (alleen wanneer we op een tag draaien)
+      # 6. publiceer naar npm 
       - name: Publish to npm
-        if: startsWith(github.ref, 'refs/tags/v')
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
