@@ -3,7 +3,7 @@ name: Manual Release
 
 on:
   workflow_dispatch:
-      inputs:
+    inputs:
       dry_run:
         description: 'Publish dry-run? (true/false)'
         required: true
