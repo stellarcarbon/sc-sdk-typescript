@@ -32,15 +32,13 @@ jobs:
         run: npm run sync-version
 
       # 5. commit de bijgewerkte package.json en maak een tag
-      - name: Commit & Tag
+      - name: Create & push tag
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          V=${{ steps.get_version.outputs.VER }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore(release): v$VERSION"
-          git tag v$VERSION
-          git push origin HEAD:main --follow-tags
+          git tag -a "v$V" -m "Release v$V"
+          git push origin "v$V"
 
       # 6. publiceer naar npm (alleen wanneer we op een tag draaien)
       - name: Publish to npm
