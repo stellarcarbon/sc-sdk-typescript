@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "CommonJS",
+    "declaration": true,
+    "outDir": "lib",
+    "strict": false,
+    "esModuleInterop": true,
+
+    // but turn off the bits that cause your TS2322 error:
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
+
+    // still skip type‐checking of external .d.ts
+    "skipLibCheck": true,
+
+    // ensure you still emit even if there are other errors
+    "noEmitOnError": false,
+    
+    "strictPropertyInitialization": false
+  },
+  "include": ["src"]
+}

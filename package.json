@@ -1,0 +1,38 @@
+{
+  "name": "@stellarcarbon/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Stellarcarbon API",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+    "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate": "openapi --useOptions --input https://api.stellarcarbon.io/openapi.json --output src --client axios",
+    "prebuild": "npm run gen2",
+    "test": "jest",
+    "gen2": "openapi-ts"
+  },
+  "dependencies": {
+    "axios": "^1.0.0"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.77.0",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourorg/stellarcarbon-sdk.git"
+  },
+  "license": "MIT"
+}
