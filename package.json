@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "prebuild": "npm run generate",
-    "prepare": "npm run build",
+    "prepare": "npm run sync-version && npm run build",
     "test": "jest",
     "generate": "openapi-ts",
     "sync-version": "node scripts/sync-version.js"
