@@ -40,7 +40,7 @@ jobs:
       - name: Create dummy release test file
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |
-          echo "This is a dry-run release test at version ${{ steps.get_version.outputs.VER }}" \
+          echo "This is a dry-run release test at version ${{ steps.get_version.outputs.VER }}!" \
             > src/RELEASE_TEST.md
 
       # 5. commit de bijgewerkte package.json en maak een tag
