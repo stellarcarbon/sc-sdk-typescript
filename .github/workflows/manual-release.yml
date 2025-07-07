@@ -47,6 +47,8 @@ jobs:
       - name: Commit release bump
         run: |
           V=${{ steps.get_version.outputs.VER }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           # stage any changes — for example package.json, lockfile, or lib/
           git add .
           git commit -m "chore(release): prepare release v$V"
