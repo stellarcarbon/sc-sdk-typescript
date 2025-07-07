@@ -16,10 +16,11 @@
   "scripts": {
     "build": "tsc",
     "prebuild": "npm run generate",
-    "prepare": "npm run sync-version && npm run build",
+    "prepare": "npm run update-openapi && npm run sync-version && npm run build",
     "test": "jest",
     "generate": "openapi-ts",
-    "sync-version": "node scripts/sync-version.cjs"
+    "sync-version": "node scripts/sync-version.cjs",
+    "update-openapi": "node scripts/update-openapi.cjs"
   },
   "dependencies": {
     "axios": "^1.0.0"
