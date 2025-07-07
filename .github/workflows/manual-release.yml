@@ -37,7 +37,21 @@ jobs:
         id: get_version
         run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
+      - name: Create dummy release test file
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "This is a dry-run release test at version ${{ steps.get_version.outputs.VER }}" \
+            > src/RELEASE_TEST.md
+
       # 5. commit de bijgewerkte package.json en maak een tag
+      - name: Commit release bump
+        run: |
+          V=${{ steps.get_version.outputs.VER }}
+          # stage any changes — for example package.json, lockfile, or lib/
+          git add .
+          git commit -m "chore(release): prepare release v$V"
+          git push origin HEAD:${{ github.ref_name }}
+
       - name: Create & push tag
         run: |
           V=${{ steps.get_version.outputs.VER }}
