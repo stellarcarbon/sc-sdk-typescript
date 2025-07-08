@@ -2,6 +2,8 @@
 
 The Stellarcarbon Typescript SDK can be used to easily use the Stellarcarbon API in your typescript project.
 
+By default the SDK will run against the mainnet API at `https://api.stellarcarbon.io`
+
 ## Installation
 
 ```npm install @stellarcarbon/sc-sdk-typescript```
@@ -15,7 +17,7 @@ Fetch transactions list
 ```
 import { getSinkTxList, SinkTxListResponse } from "@stellarcarbon/sc-sdk";
 
-const fetchData = async (): Promise<SinkTxListResponse> => {
+const fetchData = async (): Promise<SinkTxListResponse | undefined> => {
     const { data } = await getSinkTxList();
     return data;
 }
