@@ -6,22 +6,23 @@ Check out the Stellarcarbon API specification docs here: https://api.stellarcarb
 
 By default the Stellarcarbon API and its SDK will connect with the Stellar mainnet.
 
-
 ## Installation
 
-```npm install @stellarcarbon/sc-sdk-typescript```
-
-
+`npm install @stellarcarbon/sc-sdk-typescript`
 
 ## Example usage
 
-Fetch transactions list
+A function that fetches the transactions list made with a given wallet pubkey.
 
 ```
 import { getSinkTxList, SinkTxListResponse } from "@stellarcarbon/sc-sdk";
 
-const fetchData = async (): Promise<SinkTxListResponse | undefined> => {
-    const { data } = await getSinkTxList();
+const fetchTxListForFunder = async (pubKey: string): Promise<SinkTxListResponse | undefined> => {
+    const { data } = await getSinkTxList({
+      query: {
+        for_funder: pubKey,
+      },
+    });
     return data;
 }
 ```
@@ -33,21 +34,22 @@ Get a quote of the current CARBON price in USD.
 ```
 import { getCarbonQuote, CarbonQuoteResponse } from "@stellarcarbon/sc-sdk";
 
-const fetchData = async (): Promise<CarbonQuoteResponse | undefined> => {
+const fetchQuote = async (): Promise<CarbonQuoteResponse | undefined> => {
     const { data } = await getCarbonQuote();
     return data;
 };
 ```
 
-
 ## Testnet
 
- We also have an API that is connected to the Stellar testnet: https://testnet-api.stellarcarbon.io. This is our development environment so it may be unstable. Connecting to the testnet API is currently not supported in this SDK. However, you could just swap the base URL and hope the schema has not changed too much:
+We also have an API that is connected to the Stellar testnet: https://testnet-api.stellarcarbon.io. This is our development environment so it may be unstable. Connecting to the testnet API is currently not supported in this SDK. However, you could just swap the base URL and hope the schema has not changed too much:
 
- ```
-import { client } from 'client/client.gen';
+```
+import { client } from '@stellarcarbon/sc-sdk';
 
 client.setConfig({
-  baseUrl: 'https://example.com',
+ baseUrl: 'https://testnet-api.stellarcarbon.io',
 });
- ```
+
+fetchQuote();
+```
