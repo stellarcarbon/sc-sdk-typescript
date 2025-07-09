@@ -2,7 +2,10 @@
 
 The Stellarcarbon Typescript SDK can be used to easily use the Stellarcarbon API in your typescript project.
 
-By default the SDK will run against the mainnet API at `https://api.stellarcarbon.io`
+Check out the Stellarcarbon API specification docs here: https://api.stellarcarbon.io/docs
+
+By default the Stellarcarbon API and its SDK will connect with the Stellar mainnet.
+
 
 ## Installation
 
@@ -35,3 +38,16 @@ const fetchData = async (): Promise<CarbonQuoteResponse | undefined> => {
     return data;
 };
 ```
+
+
+## Testnet
+
+ We also have an API that is connected to the Stellar testnet: https://testnet-api.stellarcarbon.io. This is our development environment so it may be unstable. Connecting to the testnet API is currently not supported in this SDK. However, you could just swap the base URL and hope the schema has not changed too much:
+
+ ```
+import { client } from 'client/client.gen';
+
+client.setConfig({
+  baseUrl: 'https://example.com',
+});
+ ```

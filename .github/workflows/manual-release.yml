@@ -35,7 +35,7 @@ jobs:
       # 4. Versie nummer lezen
       - name: Get version
         id: get_version
-        run: echo "::set-output name=VER::v1.0.0"
+        run: echo "::set-output name=VER::v0.1.0"
         # run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
       # 5. commit de bijgewerkte package.json en maak een tag
