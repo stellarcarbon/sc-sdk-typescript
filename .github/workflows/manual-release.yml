@@ -46,8 +46,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # stage any changes — for example package.json, lockfile, or lib/
           git add .
-          git commit -m "prepare release v$V"
-          git push origin HEAD:${{ github.ref_name }}
+          if ! git diff --cached --quiet; then
+            git commit -m "prepare release $V"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "⏭ nothing to commit, continuing…"
+          fi
 
       - name: Create & push tag
         run: |
