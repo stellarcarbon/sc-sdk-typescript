@@ -1,6 +1,6 @@
 {
   "name": "@stellarcarbon/sc-sdk",
-  "version": "0.17.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for the Stellarcarbon API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

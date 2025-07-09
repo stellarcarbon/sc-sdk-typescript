@@ -17,7 +17,8 @@ async function syncVersion() {
 
   const pkgPath = path.resolve(__dirname, '../package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-  pkg.version = openapi.info.version;
+//   pkg.version = openapi.info.version;
+  pkg.version = '0.1.1'
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
   console.log(`Synced package.json version → ${pkg.version}`);
