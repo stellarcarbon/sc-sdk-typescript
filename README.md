@@ -53,7 +53,7 @@ client.setConfig({
   baseUrl: "https://testnet-api.stellarcarbon.io",
 });
 
-fetchQuote();
+fetchQuote(); // Fetches the quote on testnet
 ```
 
 API schema & docs for the testnet API are available at https://testnet-api.stellarcarbon.io/docs
