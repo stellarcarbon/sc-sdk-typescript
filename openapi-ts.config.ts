@@ -1,8 +1,8 @@
-import { defineConfig, UserConfig, defaultPlugins } from '@hey-api/openapi-ts';
+import { defineConfig, UserConfig, defaultPlugins } from "@hey-api/openapi-ts";
 
 export default defineConfig({
-  input: 'https://api.stellarcarbon.io/openapi.json',
-  output: 'src/generated',
+  input: "https://api.stellarcarbon.io/openapi.json",
+  output: "src/generated",
   parser: {
     filters: {
       deprecated: false,
@@ -11,8 +11,8 @@ export default defineConfig({
   plugins: [
     ...defaultPlugins,
     {
-      name: '@hey-api/schemas',
-      type: 'json', 
+      name: "@hey-api/schemas",
+      type: "json",
     },
-  ]
+  ],
 } as UserConfig);

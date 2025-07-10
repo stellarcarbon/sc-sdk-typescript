@@ -1,1 +1,3566 @@
-{"openapi":"3.1.0","info":{"title":"Stellarcarbon API","version":"0.17.0"},"paths":{"/auth/sep-10":{"get":{"tags":["auth"],"summary":"Request a SEP-10 challenge transaction to prove ownership of an account.","operationId":"get_sep10_challenge","parameters":[{"name":"account","in":"query","required":true,"schema":{"type":"string","title":"Account"}},{"name":"memo","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Memo"}},{"name":"home_domain","in":"query","required":false,"schema":{"type":"string","default":"stellarcarbon.io","title":"Home Domain"}},{"name":"client_domain","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Client Domain"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SEP10ChallengeResponse"}}}},"400":{"description":"Credentials or challenge failed to validate.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SEP10ErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"post":{"tags":["auth"],"summary":"Submit the signed SEP-10 challenge transaction to receive a JWT.","operationId":"validate_sep10_challenge","parameters":[{"name":"transaction","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Transaction"}}],"requestBody":{"content":{"application/json":{"schema":{"anyOf":[{"$ref":"#/components/schemas/ValidateChallengeBody"},{"type":"null"}],"title":"Challenge"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SEP10TokenResponse"}}}},"400":{"description":"Credentials or challenge failed to validate.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SEP10ErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/carbon-quote":{"get":{"tags":["CARBON"],"summary":"Get a quote of the current CARBON price in USD.","description":"Request a price quote for any amount of CARBON.\n\nThe response includes the total cost of the requested amount, as well as the average price\nper CARBON. Both are denominated in USD.\n\nThis quote is non-binding and does not take into account the amount of CARBON that we are\ncurrently able to provide from our pool.","operationId":"deprecated-get_carbon_quote","deprecated":true,"parameters":[{"name":"carbon_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number","maximum":1000.0},{"type":"string"}],"description":"requested amount of CARBON","default":"1","title":"Carbon Amount"},"description":"requested amount of CARBON"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CARBONQuoteResponse"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/usd-quote":{"get":{"tags":["CARBON"],"summary":"Get the estimated amount of CARBON that can be purchased for the given price.","operationId":"deprecated-get_usd_quote","deprecated":true,"parameters":[{"name":"usd_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number","maximum":10000.0},{"type":"string"}],"description":"requested amount of USD","default":"5","title":"Usd Amount"},"description":"requested amount of USD"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/USDQuoteResponse"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/sink-carbon/xdr":{"post":{"tags":["CARBON"],"summary":"Build the XDR for a new CARBON sinking transaction.","description":"An offset is done by atomically swapping CARBON for CarbonSINK. This endpoint can be used to\nbuild the XDR for such a sinking transaction.\n\nIf the funder does not have a sufficient balance of CARBON, a path payment will be used to\npurchase the exact amount of CARBON to be retired. The most favorable rate will be selected\nfrom the possible paths. The USDC value of this payment is included in the response for\nconvenience, but it is advisable to always check the generated XDR before signing and\nsubmitting it to the network.","operationId":"deprecated-build_sink_carbon_xdr","deprecated":true,"parameters":[{"name":"funder","in":"query","required":true,"schema":{"type":"string","description":"public key of the account that pays for the transaction","title":"Funder"},"description":"public key of the account that pays for the transaction"},{"name":"recipient","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"description":"public key of the account that will receive CarbonSINK (default: funder)","title":"Recipient"},"description":"public key of the account that will receive CarbonSINK (default: funder)"},{"name":"carbon_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number"},{"type":"string"}],"description":"the amount of CARBON to sink","default":"1","title":"Carbon Amount"},"description":"the amount of CARBON to sink"},{"name":"payment_asset","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/PaymentAsset"},{"type":"null"}],"description":"the preferred asset to pay with when the funder does not have a sufficient CARBON balance","default":"any","title":"Payment Asset"},"description":"the preferred asset to pay with when the funder does not have a sufficient CARBON balance"},{"name":"vcs_project_id","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/VcsProject"},{"type":"null"}],"description":"carbon project from which credits will be retired","default":"1360","title":"Vcs Project Id"},"description":"carbon project from which credits will be retired"},{"name":"memo_type","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/MemoType"},{"type":"null"}],"description":"the kind of memo that will be attached to the transaction","default":"text","title":"Memo Type"},"description":"the kind of memo that will be attached to the transaction"},{"name":"memo_value","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"description":"description of the reason for offsetting","default":"","title":"Memo Value"},"description":"description of the reason for offsetting"},{"name":"email","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"name-email"},{"type":"null"}],"description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)","title":"Email"},"description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SinkingResponse"}}}},"400":{"description":"No payment path was found for this Stellar account","content":{"application/json":{"schema":{"$ref":"#/components/schemas/NotFoundErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"404":{"description":"Stellar account was not found on the Public Global Stellar Network ; September 2015","content":{"application/json":{"schema":{"$ref":"#/components/schemas/NotFoundErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/stats":{"get":{"tags":["CARBON"],"summary":"Get aggregated stats of the CARBON and CarbonSINK assets.","operationId":"deprecated-get_carbon_stats","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/AssetStats"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}}},"deprecated":true}},"/carbon/carbon-quote":{"get":{"tags":["CARBON"],"summary":"Get a quote of the current CARBON price in USD.","description":"Request a price quote for any amount of CARBON.\n\nThe response includes the total cost of the requested amount, as well as the average price\nper CARBON. Both are denominated in USD.\n\nThis quote is non-binding and does not take into account the amount of CARBON that we are\ncurrently able to provide from our pool.","operationId":"get_carbon_quote","parameters":[{"name":"carbon_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number","maximum":1000.0},{"type":"string"}],"description":"requested amount of CARBON","default":"1","title":"Carbon Amount"},"description":"requested amount of CARBON"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CARBONQuoteResponse"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/carbon/usd-quote":{"get":{"tags":["CARBON"],"summary":"Get the estimated amount of CARBON that can be purchased for the given price.","operationId":"get_usd_quote","parameters":[{"name":"usd_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number","maximum":10000.0},{"type":"string"}],"description":"requested amount of USD","default":"5","title":"Usd Amount"},"description":"requested amount of USD"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/USDQuoteResponse"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/carbon/sink-carbon/xdr":{"post":{"tags":["CARBON"],"summary":"Build the XDR for a new CARBON sinking transaction.","description":"An offset is done by atomically swapping CARBON for CarbonSINK. This endpoint can be used to\nbuild the XDR for such a sinking transaction.\n\nIf the funder does not have a sufficient balance of CARBON, a path payment will be used to\npurchase the exact amount of CARBON to be retired. The most favorable rate will be selected\nfrom the possible paths. The USDC value of this payment is included in the response for\nconvenience, but it is advisable to always check the generated XDR before signing and\nsubmitting it to the network.","operationId":"build_sink_carbon_xdr","parameters":[{"name":"funder","in":"query","required":true,"schema":{"type":"string","description":"public key of the account that pays for the transaction","title":"Funder"},"description":"public key of the account that pays for the transaction"},{"name":"recipient","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"description":"public key of the account that will receive CarbonSINK (default: funder)","title":"Recipient"},"description":"public key of the account that will receive CarbonSINK (default: funder)"},{"name":"carbon_amount","in":"query","required":false,"schema":{"anyOf":[{"type":"number"},{"type":"string"}],"description":"the amount of CARBON to sink","default":"1","title":"Carbon Amount"},"description":"the amount of CARBON to sink"},{"name":"payment_asset","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/PaymentAsset"},{"type":"null"}],"description":"the preferred asset to pay with when the funder does not have a sufficient CARBON balance","default":"any","title":"Payment Asset"},"description":"the preferred asset to pay with when the funder does not have a sufficient CARBON balance"},{"name":"vcs_project_id","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/VcsProject"},{"type":"null"}],"description":"carbon project from which credits will be retired","default":"1360","title":"Vcs Project Id"},"description":"carbon project from which credits will be retired"},{"name":"memo_type","in":"query","required":false,"schema":{"anyOf":[{"$ref":"#/components/schemas/MemoType"},{"type":"null"}],"description":"the kind of memo that will be attached to the transaction","default":"text","title":"Memo Type"},"description":"the kind of memo that will be attached to the transaction"},{"name":"memo_value","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"description":"description of the reason for offsetting","default":"","title":"Memo Value"},"description":"description of the reason for offsetting"},{"name":"email","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"name-email"},{"type":"null"}],"description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)","title":"Email"},"description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SinkingResponse"}}}},"400":{"description":"No payment path was found for this Stellar account","content":{"application/json":{"schema":{"$ref":"#/components/schemas/NotFoundErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"404":{"description":"Stellar account was not found on the Public Global Stellar Network ; September 2015","content":{"application/json":{"schema":{"$ref":"#/components/schemas/NotFoundErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/carbon/stats":{"get":{"tags":["CARBON"],"summary":"Get aggregated stats of the CARBON and CarbonSINK assets.","operationId":"get_carbon_stats","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/AssetStats"}}}},"400":{"description":"Horizon transaction has failed or is malformed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"500":{"description":"An unhandled error occurred on the server"},"410":{"description":"Data requested from Horizon is before recorded history","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"503":{"description":"Horizon's historical database is too stale","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"504":{"description":"Horizon could not confirm transaction inclusion (check network conditions)","content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}}}}},"/recipients/{recipient_address}/sink-txs":{"get":{"tags":["account"],"summary":"List sinking transactions for the given recipient account.","operationId":"get_sink_txs_for_recipient","parameters":[{"name":"recipient_address","in":"path","required":true,"schema":{"type":"string","title":"Recipient Address"}},{"name":"finalized","in":"query","required":false,"schema":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Finalized"}},{"name":"cursor","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"string"},{"type":"null"}],"title":"Cursor"}},{"name":"limit","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Limit"}},{"name":"order","in":"query","required":false,"schema":{"enum":["asc","desc"],"type":"string","default":"desc","title":"Order"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SinkTxListResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/recipients/{beneficiary_address}/retirements":{"get":{"tags":["account"],"summary":"List finalized retirements for the given beneficiary account.","operationId":"get_retirements_for_beneficiary","parameters":[{"name":"beneficiary_address","in":"path","required":true,"schema":{"type":"string","title":"Beneficiary Address"}},{"name":"project","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Project"}},{"name":"cursor","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"string"},{"type":"null"}],"title":"Cursor"}},{"name":"limit","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Limit"}},{"name":"order","in":"query","required":false,"schema":{"enum":["asc","desc"],"type":"string","default":"desc","title":"Order"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RetirementListResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/recipients/{recipient_address}/stats":{"get":{"tags":["account"],"summary":"Get filtered stats for the given recipient account.","operationId":"get_recipient_stats","parameters":[{"name":"recipient_address","in":"path","required":true,"schema":{"type":"string","title":"Recipient Address"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CarbonStats"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/recipients/{recipient_address}/request-certificate":{"post":{"tags":["account"],"summary":"Request the retirement of the whole credits in this account's pending balance.","operationId":"request_certificate","security":[{"SEP-10":[]}],"parameters":[{"name":"recipient_address","in":"path","required":true,"schema":{"type":"string","description":"the account for which a retirement certificate will be issued","title":"Recipient Address"},"description":"the account for which a retirement certificate will be issued"},{"name":"email","in":"query","required":true,"schema":{"type":"string","description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)","format":"name-email","title":"Email"},"description":"email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RequestCertificateResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"403":{"description":"Authorization header is missing or malformed.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SEP10ErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/estimate/flight":{"get":{"tags":["estimate"],"summary":"Estimate the CO2 emissions for a flight between two airports.","operationId":"get_flight_estimate","parameters":[{"name":"departure","in":"query","required":true,"schema":{"type":"string","minLength":3,"maxLength":3,"title":"Departure"}},{"name":"destination","in":"query","required":true,"schema":{"type":"string","minLength":3,"maxLength":3,"title":"Destination"}},{"name":"cabin_class","in":"query","required":false,"schema":{"$ref":"#/components/schemas/CabinClass","default":"economy"}},{"name":"trip_type","in":"query","required":false,"schema":{"enum":["one-way","round-trip"],"type":"string","default":"round-trip","title":"Trip Type"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/FlightEstimateResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"404":{"description":"Airport not found. Unknown IATA code."},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/minted-blocks/":{"get":{"tags":["mint"],"summary":"List minted blocks (current and past inventory).","operationId":"get_minted_block_list","parameters":[{"name":"omit_empty","in":"query","required":false,"schema":{"type":"boolean","default":false,"title":"Omit Empty"}},{"name":"until_date","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"title":"Until Date"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/MintedBlockListResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/retirements/":{"get":{"tags":["retirement"],"summary":"List finalized retirements.","operationId":"get_retirement_list","parameters":[{"name":"for_beneficiary","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"For Beneficiary"}},{"name":"from_date","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"title":"From Date"}},{"name":"before_date","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"title":"Before Date"}},{"name":"project","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Project"}},{"name":"cursor","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"string"},{"type":"null"}],"title":"Cursor"}},{"name":"limit","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Limit"}},{"name":"order","in":"query","required":false,"schema":{"enum":["asc","desc"],"type":"string","default":"desc","title":"Order"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RetirementListResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/retirements/{certificate_id}":{"get":{"tags":["retirement"],"summary":"Fetch a single retirement and its instrument details.","operationId":"get_retirement_item","parameters":[{"name":"certificate_id","in":"path","required":true,"schema":{"type":"integer","description":"The retirement's certificate ID","title":"Certificate Id"},"description":"The retirement's certificate ID"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RetirementDetail"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"404":{"description":"Retirement was not found in our database"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/sink-txs/":{"get":{"tags":["sink"],"summary":"List sinking transactions and their retirement status.","operationId":"get_sink_tx_list","parameters":[{"name":"for_funder","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"For Funder"}},{"name":"for_recipient","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"For Recipient"}},{"name":"from_date","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"title":"From Date"}},{"name":"before_date","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"title":"Before Date"}},{"name":"finalized","in":"query","required":false,"schema":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Finalized"}},{"name":"cursor","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"string"},{"type":"null"}],"title":"Cursor"}},{"name":"limit","in":"query","required":false,"schema":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Limit"}},{"name":"order","in":"query","required":false,"schema":{"enum":["asc","desc"],"type":"string","default":"desc","title":"Order"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SinkTxListResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/sink-txs/{tx_hash}":{"get":{"tags":["sink"],"summary":"Fetch a single sink transaction and its retirement status.","operationId":"get_sink_tx_item","parameters":[{"name":"tx_hash","in":"path","required":true,"schema":{"type":"string","pattern":"^[a-f0-9]{64}$","description":"The sink transaction hash (64 hexadecimal characters)","title":"Tx Hash"},"description":"The sink transaction hash (64 hexadecimal characters)"}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/SinkTxItem"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"404":{"description":"Transaction was not found in our database"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/registry/retirements":{"get":{"tags":["registry"],"summary":"Get the list of Stellarcarbon retirements in the Verra Registry.","description":"Fetch the list of finalized CARBON retirements from the Verra Registry.\n\nReturn all retirements made to the Carbon Sink in the Verra Registry. All information on the\nretired instruments and their retirement events is directly copied from Verra. We have added\na `total_amount_retired` field for convenience, to be able to quickly access the number of\ntonnes for which Stellarcarbon has finalized their retirement in the registry.\n\nThis endpoint can be slow to respond due to the upstream query that is done in the Verra Registry.","operationId":"deprecated-list_retirements","deprecated":true,"parameters":[{"name":"for_address","in":"query","required":false,"schema":{"anyOf":[{"type":"string","minLength":56,"maxLength":56},{"type":"null"}],"description":"Optionally filter the retirements list by Stellar address.\n\nThis filter does not affect any of the aggregate statistics. Any filtered \nstatistics need to be computed by the client making the request.\n","title":"For Address"},"description":"Optionally filter the retirements list by Stellar address.\n\nThis filter does not affect any of the aggregate statistics. Any filtered \nstatistics need to be computed by the client making the request.\n"},{"name":"date_gte","in":"query","required":false,"schema":{"anyOf":[{"type":"string","format":"date"},{"type":"null"}],"description":"Only list retirements done on or after this date.","title":"Date Gte"},"description":"Only list retirements done on or after this date."}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/VerraRetirementsResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"504":{"description":"Timeout querying the Verra Registry (8 seconds)","content":{"text/html":{"example":"\n                <!DOCTYPE html><html><head><meta charset=\"utf-8\">\n                <title>Error 504</title>[...]\n            "},"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/registry/inventory":{"get":{"tags":["registry"],"summary":"Get the list of Stellarcarbon inventory batches in the Verra Registry.","description":"Show Stellarcarbon's inventory held in the CARBON Pool in the Verra Registry.\n\nReturn all batches of credits that are held in the CARBON Pool sub-account. These batches\ninclude credits that can still be used as well as credits that have been sunk through\nStellarcarbon but whose retirement has yet to be finalized in the Verra Registry, e.g.\nbecause of incomplete fractional retirements.\n\nThe field `total_inventory_credits` contains the sum of all batches in the inventory.","operationId":"deprecated-list_inventory","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/VerraInventoryResponse"}}}},"400":{"description":"The request you sent was invalid in some way"},"500":{"description":"An unhandled error occurred on the server"},"504":{"description":"Timeout querying the Verra Registry (5 seconds)","content":{"text/html":{"example":"\n                <!DOCTYPE html><html><head><meta charset=\"utf-8\">\n                <title>Error 504</title>[...]\n            "},"application/json":{"schema":{"$ref":"#/components/schemas/UpstreamErrorResponse"}}}}},"deprecated":true}}},"components":{"schemas":{"AssetStats":{"properties":{"carbon_sunk":{"type":"string","title":"Carbon Sunk"},"carbon_retired":{"type":"string","title":"Carbon Retired"},"carbon_pending":{"type":"string","title":"Carbon Pending"},"carbon_stored":{"type":"string","title":"Carbon Stored"}},"type":"object","required":["carbon_sunk","carbon_retired","carbon_pending","carbon_stored"],"title":"AssetStats"},"CARBONQuoteResponse":{"properties":{"carbon_amount":{"type":"string","title":"Carbon Amount"},"total_cost":{"type":"string","title":"Total Cost"},"average_price":{"type":"string","title":"Average Price"}},"type":"object","required":["carbon_amount","total_cost","average_price"],"title":"CARBONQuoteResponse"},"CabinClass":{"type":"string","enum":["economy","premium-economy","business"],"title":"CabinClass"},"CarbonStats":{"properties":{"carbon_sunk":{"type":"string","title":"Carbon Sunk"},"carbon_retired":{"type":"string","title":"Carbon Retired"},"carbon_pending":{"type":"string","title":"Carbon Pending"}},"type":"object","required":["carbon_sunk","carbon_retired","carbon_pending"],"title":"CarbonStats"},"CreditBatch":{"properties":{"quantity_of_credits":{"type":"integer","title":"Quantity Of Credits"},"serial_number":{"type":"string","title":"Serial Number"},"sub_account_id":{"type":"integer","title":"Sub Account Id"},"sub_account_name":{"type":"string","title":"Sub Account Name"},"vintage":{"type":"string","title":"Vintage"},"project_id":{"type":"integer","title":"Project Id"},"project_name":{"type":"string","title":"Project Name"},"project_type":{"type":"string","title":"Project Type"}},"type":"object","required":["quantity_of_credits","serial_number","sub_account_id","sub_account_name","vintage","project_id","project_name","project_type"],"title":"CreditBatch"},"DestAssetItem":{"properties":{"code":{"type":"string","title":"Code"},"issuer":{"type":"string","title":"Issuer"},"amount":{"type":"string","title":"Amount"}},"type":"object","required":["code","issuer","amount"],"title":"DestAssetItem"},"FlightEstimateResponse":{"properties":{"departure_name":{"type":"string","title":"Departure Name"},"destination_name":{"type":"string","title":"Destination Name"},"distance_km":{"type":"string","title":"Distance Km"},"co2_tonnes":{"type":"string","title":"Co2 Tonnes"}},"type":"object","required":["departure_name","destination_name","distance_km","co2_tonnes"],"title":"FlightEstimateResponse"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"InstrumentItem":{"properties":{"issuance_date":{"type":"string","format":"date","title":"Issuance Date"},"instrument_type":{"type":"string","const":"VCU","title":"Instrument Type"},"vintage_start":{"type":"string","format":"date","title":"Vintage Start"},"vintage_end":{"type":"string","format":"date","title":"Vintage End"},"total_vintage_quantity":{"type":"integer","title":"Total Vintage Quantity"}},"type":"object","required":["issuance_date","instrument_type","vintage_start","vintage_end","total_vintage_quantity"],"title":"InstrumentItem"},"MemoItem":{"properties":{"type":{"$ref":"#/components/schemas/MemoType"},"value":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Value"}},"type":"object","required":["type","value"],"title":"MemoItem"},"MemoType":{"type":"string","enum":["text","hash","none"],"title":"MemoType"},"MintedBlockItem":{"properties":{"serial_hash":{"type":"string","title":"Serial Hash"},"size":{"type":"integer","title":"Size"},"credits_remaining":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Credits Remaining"},"credits_remaining_on_date":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Credits Remaining On Date"},"transaction_hash":{"type":"string","title":"Transaction Hash"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"serial_number":{"type":"string","title":"Serial Number"},"sub_account_id":{"type":"integer","title":"Sub Account Id"},"sub_account_name":{"type":"string","title":"Sub Account Name"},"vintage_start":{"type":"string","format":"date","title":"Vintage Start"},"vintage_end":{"type":"string","format":"date","title":"Vintage End"},"vcs_project":{"$ref":"#/components/schemas/VcsProjectSummary"}},"type":"object","required":["serial_hash","size","transaction_hash","created_at","serial_number","sub_account_id","sub_account_name","vintage_start","vintage_end","vcs_project"],"title":"MintedBlockItem"},"MintedBlockListResponse":{"properties":{"total_credits_minted":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Total Credits Minted"},"total_credits_remaining":{"type":"integer","title":"Total Credits Remaining"},"minted_blocks":{"items":{"$ref":"#/components/schemas/MintedBlockItem"},"type":"array","title":"Minted Blocks"}},"type":"object","required":["total_credits_remaining","minted_blocks"],"title":"MintedBlockListResponse"},"NotFoundErrorItem":{"properties":{"loc":{"items":{"type":"string"},"type":"array","title":"Loc"},"msg":{"type":"string","title":"Msg"},"type":{"type":"string","title":"Type"},"funder":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Funder"},"recipient":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Recipient"}},"type":"object","required":["loc","msg","type","funder","recipient"],"title":"NotFoundErrorItem"},"NotFoundErrorResponse":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/NotFoundErrorItem"},"type":"array","title":"Detail"}},"type":"object","required":["detail"],"title":"NotFoundErrorResponse"},"PaymentAsset":{"type":"string","enum":["XLM","USDC","any"],"title":"PaymentAsset"},"RequestCertificateResponse":{"properties":{"account":{"type":"string","title":"Account"},"certificate_amount":{"type":"integer","title":"Certificate Amount"},"pending_balance_after_retirement":{"type":"string","title":"Pending Balance After Retirement"}},"type":"object","required":["account","certificate_amount","pending_balance_after_retirement"],"title":"RequestCertificateResponse"},"RetiredFromBlock":{"properties":{"block_hash":{"type":"string","title":"Block Hash"},"vcu_amount":{"type":"integer","title":"Vcu Amount"}},"type":"object","required":["block_hash","vcu_amount"],"title":"RetiredFromBlock"},"RetirementDetail":{"properties":{"certificate_id":{"type":"integer","title":"Certificate Id"},"registry_url":{"type":"string","title":"Registry Url"},"vcu_amount":{"type":"integer","title":"Vcu Amount"},"serial_number":{"type":"string","title":"Serial Number"},"retirement_date":{"type":"string","format":"date","title":"Retirement Date"},"beneficiary":{"type":"string","title":"Beneficiary"},"details":{"type":"string","title":"Details"},"vcs_project":{"$ref":"#/components/schemas/VcsProjectDetail"},"instrument":{"$ref":"#/components/schemas/InstrumentItem"},"retired_from":{"items":{"$ref":"#/components/schemas/RetiredFromBlock"},"type":"array","title":"Retired From"},"sink_statuses":{"items":{"$ref":"#/components/schemas/SinkTxSummary"},"type":"array","title":"Sink Statuses"}},"type":"object","required":["certificate_id","registry_url","vcu_amount","serial_number","retirement_date","beneficiary","details","vcs_project","instrument","retired_from","sink_statuses"],"title":"RetirementDetail"},"RetirementItem":{"properties":{"certificate_id":{"type":"integer","title":"Certificate Id"},"registry_url":{"type":"string","title":"Registry Url"},"vcu_amount":{"type":"integer","title":"Vcu Amount"},"serial_number":{"type":"string","title":"Serial Number"},"retirement_date":{"type":"string","format":"date","title":"Retirement Date"},"beneficiary":{"type":"string","title":"Beneficiary"},"details":{"type":"string","title":"Details"},"vcs_project_id":{"type":"integer","title":"Vcs Project Id"},"instrument":{"$ref":"#/components/schemas/InstrumentItem"}},"type":"object","required":["certificate_id","registry_url","vcu_amount","serial_number","retirement_date","beneficiary","details","vcs_project_id","instrument"],"title":"RetirementItem"},"RetirementListResponse":{"properties":{"total_carbon_retired":{"type":"integer","title":"Total Carbon Retired"},"retirements":{"items":{"$ref":"#/components/schemas/RetirementItem"},"type":"array","title":"Retirements"}},"type":"object","required":["total_carbon_retired","retirements"],"title":"RetirementListResponse"},"RetirementSummary":{"properties":{"certificate_id":{"type":"integer","title":"Certificate Id"},"amount_filled":{"type":"string","title":"Amount Filled"},"finalized":{"type":"boolean","title":"Finalized"}},"type":"object","required":["certificate_id","amount_filled","finalized"],"title":"RetirementSummary"},"SEP10ChallengeResponse":{"properties":{"transaction":{"type":"string","title":"Transaction"},"network_passphrase":{"type":"string","title":"Network Passphrase"}},"type":"object","required":["transaction","network_passphrase"],"title":"SEP10ChallengeResponse"},"SEP10ErrorResponse":{"properties":{"detail":{"type":"string","title":"Detail"}},"type":"object","required":["detail"],"title":"SEP10ErrorResponse"},"SEP10TokenResponse":{"properties":{"token":{"type":"string","title":"Token"}},"type":"object","required":["token"],"title":"SEP10TokenResponse"},"SinkTxItem":{"properties":{"hash":{"type":"string","title":"Hash"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"funder":{"type":"string","title":"Funder"},"recipient":{"type":"string","title":"Recipient"},"carbon_amount":{"type":"string","title":"Carbon Amount"},"source_asset":{"$ref":"#/components/schemas/SourceAssetItem"},"dest_asset":{"$ref":"#/components/schemas/DestAssetItem"},"vcs_project_id":{"type":"integer","title":"Vcs Project Id"},"memo":{"$ref":"#/components/schemas/MemoItem"},"paging_token":{"type":"string","title":"Paging Token"},"retirement_finalized":{"type":"boolean","title":"Retirement Finalized"},"retirements":{"items":{"$ref":"#/components/schemas/RetirementSummary"},"type":"array","title":"Retirements"}},"type":"object","required":["hash","created_at","funder","recipient","carbon_amount","source_asset","dest_asset","vcs_project_id","memo","paging_token","retirement_finalized","retirements"],"title":"SinkTxItem"},"SinkTxListResponse":{"properties":{"retirement_grace_days":{"type":"integer","title":"Retirement Grace Days"},"total_carbon_sunk":{"type":"string","title":"Total Carbon Sunk"},"total_carbon_retired":{"type":"string","title":"Total Carbon Retired"},"total_carbon_pending":{"type":"string","title":"Total Carbon Pending"},"transactions":{"items":{"$ref":"#/components/schemas/SinkTxItem"},"type":"array","title":"Transactions"}},"type":"object","required":["retirement_grace_days","total_carbon_sunk","total_carbon_retired","total_carbon_pending","transactions"],"title":"SinkTxListResponse"},"SinkTxSummary":{"properties":{"sinking_tx_hash":{"type":"string","title":"Sinking Tx Hash"},"amount_filled":{"type":"string","title":"Amount Filled"},"finalized":{"type":"boolean","title":"Finalized"}},"type":"object","required":["sinking_tx_hash","amount_filled","finalized"],"title":"SinkTxSummary"},"SinkingResponse":{"properties":{"funder":{"type":"string","title":"Funder"},"recipient":{"type":"string","title":"Recipient"},"carbon_amount":{"type":"string","title":"Carbon Amount"},"usdc_amount":{"type":"string","title":"Usdc Amount"},"payment_asset":{"type":"string","title":"Payment Asset"},"payment_max_amount":{"type":"string","title":"Payment Max Amount"},"vcs_project_id":{"type":"integer","title":"Vcs Project Id"},"tx_xdr":{"type":"string","title":"Tx Xdr"},"txrep":{"type":"string","title":"Txrep","default":"","deprecated":true}},"type":"object","required":["funder","recipient","carbon_amount","usdc_amount","payment_asset","payment_max_amount","vcs_project_id","tx_xdr"],"title":"SinkingResponse"},"SourceAssetItem":{"properties":{"code":{"type":"string","title":"Code"},"issuer":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Issuer"},"amount":{"type":"string","title":"Amount"}},"type":"object","required":["code","issuer","amount"],"title":"SourceAssetItem"},"USDQuoteResponse":{"properties":{"usd_amount":{"type":"string","title":"Usd Amount"},"total_carbon":{"type":"string","title":"Total Carbon"}},"type":"object","required":["usd_amount","total_carbon"],"title":"USDQuoteResponse"},"UpstreamErrorItem":{"properties":{"msg":{"type":"string","title":"Msg"},"type":{"type":"string","title":"Type"},"url":{"type":"string","title":"Url"},"response":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Response"}},"type":"object","required":["msg","type","url","response"],"title":"UpstreamErrorItem"},"UpstreamErrorResponse":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/UpstreamErrorItem"},"type":"array","title":"Detail"}},"type":"object","required":["detail"],"title":"UpstreamErrorResponse"},"ValidateChallengeBody":{"properties":{"transaction":{"type":"string","minLength":25,"title":"Transaction"}},"type":"object","required":["transaction"],"title":"ValidateChallengeBody"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"},"VcsProject":{"type":"string","enum":["1360"],"title":"VcsProject"},"VcsProjectDetail":{"properties":{"id":{"type":"integer","title":"Id"},"registry_url":{"type":"string","title":"Registry Url"},"name":{"type":"string","title":"Name"},"category":{"type":"string","title":"Category"},"protocol":{"type":"string","title":"Protocol"},"additional_certifications":{"type":"string","title":"Additional Certifications"},"region":{"type":"string","title":"Region"},"country":{"type":"string","title":"Country"}},"type":"object","required":["id","registry_url","name","category","protocol","additional_certifications","region","country"],"title":"VcsProjectDetail"},"VcsProjectSummary":{"properties":{"id":{"type":"integer","title":"Id"},"registry_url":{"type":"string","title":"Registry Url"},"name":{"type":"string","title":"Name"},"category":{"type":"string","title":"Category"}},"type":"object","required":["id","registry_url","name","category"],"title":"VcsProjectSummary"},"VerraInventoryResponse":{"properties":{"total_inventory_credits":{"type":"integer","title":"Total Inventory Credits"},"credit_batches":{"items":{"$ref":"#/components/schemas/CreditBatch"},"type":"array","title":"Credit Batches"}},"type":"object","required":["total_inventory_credits","credit_batches"],"title":"VerraInventoryResponse"},"VerraRetirementItem":{"properties":{"issuance_date":{"type":"string","title":"Issuance Date"},"instrument_type":{"type":"string","title":"Instrument Type"},"vintage_start":{"type":"string","title":"Vintage Start"},"vintage_end":{"type":"string","title":"Vintage End"},"total_vintage_quantity":{"type":"integer","title":"Total Vintage Quantity"},"vcs_id":{"type":"string","title":"Vcs Id"},"vcs_name":{"type":"string","title":"Vcs Name"},"vcs_category":{"type":"string","title":"Vcs Category"},"vcs_protocol":{"type":"string","title":"Vcs Protocol"},"additional_certifications":{"type":"string","title":"Additional Certifications"},"region":{"type":"string","title":"Region"},"country":{"type":"string","title":"Country"},"vcu_amount":{"type":"integer","title":"Vcu Amount"},"serial_numbers":{"type":"string","title":"Serial Numbers"},"retirement_date":{"type":"string","title":"Retirement Date"},"retirement_beneficiary":{"type":"string","title":"Retirement Beneficiary"},"retirement_details":{"type":"string","title":"Retirement Details"},"certificate_id":{"type":"string","title":"Certificate Id"}},"type":"object","required":["issuance_date","instrument_type","vintage_start","vintage_end","total_vintage_quantity","vcs_id","vcs_name","vcs_category","vcs_protocol","additional_certifications","region","country","vcu_amount","serial_numbers","retirement_date","retirement_beneficiary","retirement_details","certificate_id"],"title":"VerraRetirementItem"},"VerraRetirementsResponse":{"properties":{"total_count":{"type":"integer","title":"Total Count"},"count_exceeded":{"type":"boolean","title":"Count Exceeded"},"total_amount_retired":{"type":"integer","title":"Total Amount Retired"},"retirements":{"items":{"$ref":"#/components/schemas/VerraRetirementItem"},"type":"array","title":"Retirements"}},"type":"object","required":["total_count","count_exceeded","total_amount_retired","retirements"],"title":"VerraRetirementsResponse"}},"securitySchemes":{"SEP-10":{"type":"http","scheme":"bearer"}}}}
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Stellarcarbon API",
+        "version": "0.17.0"
+    },
+    "paths": {
+        "/auth/sep-10": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Request a SEP-10 challenge transaction to prove ownership of an account.",
+                "operationId": "get_sep10_challenge",
+                "parameters": [
+                    {
+                        "name": "account",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Account"
+                        }
+                    },
+                    {
+                        "name": "memo",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Memo"
+                        }
+                    },
+                    {
+                        "name": "home_domain",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "stellarcarbon.io",
+                            "title": "Home Domain"
+                        }
+                    },
+                    {
+                        "name": "client_domain",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Client Domain"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ChallengeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Credentials or challenge failed to validate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Submit the signed SEP-10 challenge transaction to receive a JWT.",
+                "operationId": "validate_sep10_challenge",
+                "parameters": [
+                    {
+                        "name": "transaction",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Transaction"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/ValidateChallengeBody"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Challenge"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10TokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Credentials or challenge failed to validate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/carbon-quote": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get a quote of the current CARBON price in USD.",
+                "description": "Request a price quote for any amount of CARBON.\n\nThe response includes the total cost of the requested amount, as well as the average price\nper CARBON. Both are denominated in USD.\n\nThis quote is non-binding and does not take into account the amount of CARBON that we are\ncurrently able to provide from our pool.",
+                "operationId": "deprecated-get_carbon_quote",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "carbon_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number",
+                                    "maximum": 1000
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "requested amount of CARBON",
+                            "default": "1",
+                            "title": "Carbon Amount"
+                        },
+                        "description": "requested amount of CARBON"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CARBONQuoteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/usd-quote": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get the estimated amount of CARBON that can be purchased for the given price.",
+                "operationId": "deprecated-get_usd_quote",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "usd_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number",
+                                    "maximum": 10000
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "requested amount of USD",
+                            "default": "5",
+                            "title": "Usd Amount"
+                        },
+                        "description": "requested amount of USD"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/USDQuoteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sink-carbon/xdr": {
+            "post": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Build the XDR for a new CARBON sinking transaction.",
+                "description": "An offset is done by atomically swapping CARBON for CarbonSINK. This endpoint can be used to\nbuild the XDR for such a sinking transaction.\n\nIf the funder does not have a sufficient balance of CARBON, a path payment will be used to\npurchase the exact amount of CARBON to be retired. The most favorable rate will be selected\nfrom the possible paths. The USDC value of this payment is included in the response for\nconvenience, but it is advisable to always check the generated XDR before signing and\nsubmitting it to the network.",
+                "operationId": "deprecated-build_sink_carbon_xdr",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "funder",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "public key of the account that pays for the transaction",
+                            "title": "Funder"
+                        },
+                        "description": "public key of the account that pays for the transaction"
+                    },
+                    {
+                        "name": "recipient",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "public key of the account that will receive CarbonSINK (default: funder)",
+                            "title": "Recipient"
+                        },
+                        "description": "public key of the account that will receive CarbonSINK (default: funder)"
+                    },
+                    {
+                        "name": "carbon_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "the amount of CARBON to sink",
+                            "default": "1",
+                            "title": "Carbon Amount"
+                        },
+                        "description": "the amount of CARBON to sink"
+                    },
+                    {
+                        "name": "payment_asset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/PaymentAsset"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "the preferred asset to pay with when the funder does not have a sufficient CARBON balance",
+                            "default": "any",
+                            "title": "Payment Asset"
+                        },
+                        "description": "the preferred asset to pay with when the funder does not have a sufficient CARBON balance"
+                    },
+                    {
+                        "name": "vcs_project_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/VcsProject"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "carbon project from which credits will be retired",
+                            "default": "1360",
+                            "title": "Vcs Project Id"
+                        },
+                        "description": "carbon project from which credits will be retired"
+                    },
+                    {
+                        "name": "memo_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/MemoType"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "the kind of memo that will be attached to the transaction",
+                            "default": "text",
+                            "title": "Memo Type"
+                        },
+                        "description": "the kind of memo that will be attached to the transaction"
+                    },
+                    {
+                        "name": "memo_value",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "description of the reason for offsetting",
+                            "default": "",
+                            "title": "Memo Value"
+                        },
+                        "description": "description of the reason for offsetting"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "name-email"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)",
+                            "title": "Email"
+                        },
+                        "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SinkingResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No payment path was found for this Stellar account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Stellar account was not found on the Public Global Stellar Network ; September 2015",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/stats": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get aggregated stats of the CARBON and CarbonSINK assets.",
+                "operationId": "deprecated-get_carbon_stats",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetStats"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "deprecated": true
+            }
+        },
+        "/carbon/carbon-quote": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get a quote of the current CARBON price in USD.",
+                "description": "Request a price quote for any amount of CARBON.\n\nThe response includes the total cost of the requested amount, as well as the average price\nper CARBON. Both are denominated in USD.\n\nThis quote is non-binding and does not take into account the amount of CARBON that we are\ncurrently able to provide from our pool.",
+                "operationId": "get_carbon_quote",
+                "parameters": [
+                    {
+                        "name": "carbon_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number",
+                                    "maximum": 1000
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "requested amount of CARBON",
+                            "default": "1",
+                            "title": "Carbon Amount"
+                        },
+                        "description": "requested amount of CARBON"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CARBONQuoteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/carbon/usd-quote": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get the estimated amount of CARBON that can be purchased for the given price.",
+                "operationId": "get_usd_quote",
+                "parameters": [
+                    {
+                        "name": "usd_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number",
+                                    "maximum": 10000
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "requested amount of USD",
+                            "default": "5",
+                            "title": "Usd Amount"
+                        },
+                        "description": "requested amount of USD"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/USDQuoteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/carbon/sink-carbon/xdr": {
+            "post": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Build the XDR for a new CARBON sinking transaction.",
+                "description": "An offset is done by atomically swapping CARBON for CarbonSINK. This endpoint can be used to\nbuild the XDR for such a sinking transaction.\n\nIf the funder does not have a sufficient balance of CARBON, a path payment will be used to\npurchase the exact amount of CARBON to be retired. The most favorable rate will be selected\nfrom the possible paths. The USDC value of this payment is included in the response for\nconvenience, but it is advisable to always check the generated XDR before signing and\nsubmitting it to the network.",
+                "operationId": "build_sink_carbon_xdr",
+                "parameters": [
+                    {
+                        "name": "funder",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "public key of the account that pays for the transaction",
+                            "title": "Funder"
+                        },
+                        "description": "public key of the account that pays for the transaction"
+                    },
+                    {
+                        "name": "recipient",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "public key of the account that will receive CarbonSINK (default: funder)",
+                            "title": "Recipient"
+                        },
+                        "description": "public key of the account that will receive CarbonSINK (default: funder)"
+                    },
+                    {
+                        "name": "carbon_amount",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "the amount of CARBON to sink",
+                            "default": "1",
+                            "title": "Carbon Amount"
+                        },
+                        "description": "the amount of CARBON to sink"
+                    },
+                    {
+                        "name": "payment_asset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/PaymentAsset"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "the preferred asset to pay with when the funder does not have a sufficient CARBON balance",
+                            "default": "any",
+                            "title": "Payment Asset"
+                        },
+                        "description": "the preferred asset to pay with when the funder does not have a sufficient CARBON balance"
+                    },
+                    {
+                        "name": "vcs_project_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/VcsProject"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "carbon project from which credits will be retired",
+                            "default": "1360",
+                            "title": "Vcs Project Id"
+                        },
+                        "description": "carbon project from which credits will be retired"
+                    },
+                    {
+                        "name": "memo_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/MemoType"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "the kind of memo that will be attached to the transaction",
+                            "default": "text",
+                            "title": "Memo Type"
+                        },
+                        "description": "the kind of memo that will be attached to the transaction"
+                    },
+                    {
+                        "name": "memo_value",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "description of the reason for offsetting",
+                            "default": "",
+                            "title": "Memo Value"
+                        },
+                        "description": "description of the reason for offsetting"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "name-email"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)",
+                            "title": "Email"
+                        },
+                        "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SinkingResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No payment path was found for this Stellar account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Stellar account was not found on the Public Global Stellar Network ; September 2015",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/carbon/stats": {
+            "get": {
+                "tags": [
+                    "CARBON"
+                ],
+                "summary": "Get aggregated stats of the CARBON and CarbonSINK assets.",
+                "operationId": "get_carbon_stats",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetStats"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Horizon transaction has failed or is malformed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Data requested from Horizon is before recorded history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "503": {
+                        "description": "Horizon's historical database is too stale",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Horizon could not confirm transaction inclusion (check network conditions)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/recipients/{recipient_address}/sink-txs": {
+            "get": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "List sinking transactions for the given recipient account.",
+                "operationId": "get_sink_txs_for_recipient",
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Recipient Address"
+                        }
+                    },
+                    {
+                        "name": "finalized",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Finalized"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Cursor"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string",
+                            "default": "desc",
+                            "title": "Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SinkTxListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/recipients/{beneficiary_address}/retirements": {
+            "get": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "List finalized retirements for the given beneficiary account.",
+                "operationId": "get_retirements_for_beneficiary",
+                "parameters": [
+                    {
+                        "name": "beneficiary_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Beneficiary Address"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Project"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Cursor"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string",
+                            "default": "desc",
+                            "title": "Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RetirementListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/recipients/{recipient_address}/stats": {
+            "get": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get filtered stats for the given recipient account.",
+                "operationId": "get_recipient_stats",
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Recipient Address"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CarbonStats"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/recipients/{recipient_address}/request-certificate": {
+            "post": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Request the retirement of the whole credits in this account's pending balance.",
+                "operationId": "request_certificate",
+                "security": [
+                    {
+                        "SEP-10": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "the account for which a retirement certificate will be issued",
+                            "title": "Recipient Address"
+                        },
+                        "description": "the account for which a retirement certificate will be issued"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)",
+                            "format": "name-email",
+                            "title": "Email"
+                        },
+                        "description": "email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RequestCertificateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "403": {
+                        "description": "Authorization header is missing or malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/estimate/flight": {
+            "get": {
+                "tags": [
+                    "estimate"
+                ],
+                "summary": "Estimate the CO2 emissions for a flight between two airports.",
+                "operationId": "get_flight_estimate",
+                "parameters": [
+                    {
+                        "name": "departure",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "title": "Departure"
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "title": "Destination"
+                        }
+                    },
+                    {
+                        "name": "cabin_class",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/CabinClass",
+                            "default": "economy"
+                        }
+                    },
+                    {
+                        "name": "trip_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "enum": [
+                                "one-way",
+                                "round-trip"
+                            ],
+                            "type": "string",
+                            "default": "round-trip",
+                            "title": "Trip Type"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlightEstimateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "404": {
+                        "description": "Airport not found. Unknown IATA code."
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/minted-blocks/": {
+            "get": {
+                "tags": [
+                    "mint"
+                ],
+                "summary": "List minted blocks (current and past inventory).",
+                "operationId": "get_minted_block_list",
+                "parameters": [
+                    {
+                        "name": "omit_empty",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Omit Empty"
+                        }
+                    },
+                    {
+                        "name": "until_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Until Date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MintedBlockListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/retirements/": {
+            "get": {
+                "tags": [
+                    "retirement"
+                ],
+                "summary": "List finalized retirements.",
+                "operationId": "get_retirement_list",
+                "parameters": [
+                    {
+                        "name": "for_beneficiary",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "For Beneficiary"
+                        }
+                    },
+                    {
+                        "name": "from_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "From Date"
+                        }
+                    },
+                    {
+                        "name": "before_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Before Date"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Project"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Cursor"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string",
+                            "default": "desc",
+                            "title": "Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RetirementListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/retirements/{certificate_id}": {
+            "get": {
+                "tags": [
+                    "retirement"
+                ],
+                "summary": "Fetch a single retirement and its instrument details.",
+                "operationId": "get_retirement_item",
+                "parameters": [
+                    {
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The retirement's certificate ID",
+                            "title": "Certificate Id"
+                        },
+                        "description": "The retirement's certificate ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RetirementDetail"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "404": {
+                        "description": "Retirement was not found in our database"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/sink-txs/": {
+            "get": {
+                "tags": [
+                    "sink"
+                ],
+                "summary": "List sinking transactions and their retirement status.",
+                "operationId": "get_sink_tx_list",
+                "parameters": [
+                    {
+                        "name": "for_funder",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "For Funder"
+                        }
+                    },
+                    {
+                        "name": "for_recipient",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "For Recipient"
+                        }
+                    },
+                    {
+                        "name": "from_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "From Date"
+                        }
+                    },
+                    {
+                        "name": "before_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Before Date"
+                        }
+                    },
+                    {
+                        "name": "finalized",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Finalized"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Cursor"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string",
+                            "default": "desc",
+                            "title": "Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SinkTxListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/sink-txs/{tx_hash}": {
+            "get": {
+                "tags": [
+                    "sink"
+                ],
+                "summary": "Fetch a single sink transaction and its retirement status.",
+                "operationId": "get_sink_tx_item",
+                "parameters": [
+                    {
+                        "name": "tx_hash",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$",
+                            "description": "The sink transaction hash (64 hexadecimal characters)",
+                            "title": "Tx Hash"
+                        },
+                        "description": "The sink transaction hash (64 hexadecimal characters)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SinkTxItem"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "404": {
+                        "description": "Transaction was not found in our database"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/registry/retirements": {
+            "get": {
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Get the list of Stellarcarbon retirements in the Verra Registry.",
+                "description": "Fetch the list of finalized CARBON retirements from the Verra Registry.\n\nReturn all retirements made to the Carbon Sink in the Verra Registry. All information on the\nretired instruments and their retirement events is directly copied from Verra. We have added\na `total_amount_retired` field for convenience, to be able to quickly access the number of\ntonnes for which Stellarcarbon has finalized their retirement in the registry.\n\nThis endpoint can be slow to respond due to the upstream query that is done in the Verra Registry.",
+                "operationId": "deprecated-list_retirements",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "for_address",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 56,
+                                    "maxLength": 56
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Optionally filter the retirements list by Stellar address.\n\nThis filter does not affect any of the aggregate statistics. Any filtered \nstatistics need to be computed by the client making the request.\n",
+                            "title": "For Address"
+                        },
+                        "description": "Optionally filter the retirements list by Stellar address.\n\nThis filter does not affect any of the aggregate statistics. Any filtered \nstatistics need to be computed by the client making the request.\n"
+                    },
+                    {
+                        "name": "date_gte",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Only list retirements done on or after this date.",
+                            "title": "Date Gte"
+                        },
+                        "description": "Only list retirements done on or after this date."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VerraRetirementsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "504": {
+                        "description": "Timeout querying the Verra Registry (8 seconds)",
+                        "content": {
+                            "text/html": {
+                                "example": "\n                <!DOCTYPE html><html><head><meta charset=\"utf-8\">\n                <title>Error 504</title>[...]\n            "
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/registry/inventory": {
+            "get": {
+                "tags": [
+                    "registry"
+                ],
+                "summary": "Get the list of Stellarcarbon inventory batches in the Verra Registry.",
+                "description": "Show Stellarcarbon's inventory held in the CARBON Pool in the Verra Registry.\n\nReturn all batches of credits that are held in the CARBON Pool sub-account. These batches\ninclude credits that can still be used as well as credits that have been sunk through\nStellarcarbon but whose retirement has yet to be finalized in the Verra Registry, e.g.\nbecause of incomplete fractional retirements.\n\nThe field `total_inventory_credits` contains the sum of all batches in the inventory.",
+                "operationId": "deprecated-list_inventory",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VerraInventoryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    },
+                    "504": {
+                        "description": "Timeout querying the Verra Registry (5 seconds)",
+                        "content": {
+                            "text/html": {
+                                "example": "\n                <!DOCTYPE html><html><head><meta charset=\"utf-8\">\n                <title>Error 504</title>[...]\n            "
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpstreamErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "deprecated": true
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AssetStats": {
+                "properties": {
+                    "carbon_sunk": {
+                        "type": "string",
+                        "title": "Carbon Sunk"
+                    },
+                    "carbon_retired": {
+                        "type": "string",
+                        "title": "Carbon Retired"
+                    },
+                    "carbon_pending": {
+                        "type": "string",
+                        "title": "Carbon Pending"
+                    },
+                    "carbon_stored": {
+                        "type": "string",
+                        "title": "Carbon Stored"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "carbon_sunk",
+                    "carbon_retired",
+                    "carbon_pending",
+                    "carbon_stored"
+                ],
+                "title": "AssetStats"
+            },
+            "CARBONQuoteResponse": {
+                "properties": {
+                    "carbon_amount": {
+                        "type": "string",
+                        "title": "Carbon Amount"
+                    },
+                    "total_cost": {
+                        "type": "string",
+                        "title": "Total Cost"
+                    },
+                    "average_price": {
+                        "type": "string",
+                        "title": "Average Price"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "carbon_amount",
+                    "total_cost",
+                    "average_price"
+                ],
+                "title": "CARBONQuoteResponse"
+            },
+            "CabinClass": {
+                "type": "string",
+                "enum": [
+                    "economy",
+                    "premium-economy",
+                    "business"
+                ],
+                "title": "CabinClass"
+            },
+            "CarbonStats": {
+                "properties": {
+                    "carbon_sunk": {
+                        "type": "string",
+                        "title": "Carbon Sunk"
+                    },
+                    "carbon_retired": {
+                        "type": "string",
+                        "title": "Carbon Retired"
+                    },
+                    "carbon_pending": {
+                        "type": "string",
+                        "title": "Carbon Pending"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "carbon_sunk",
+                    "carbon_retired",
+                    "carbon_pending"
+                ],
+                "title": "CarbonStats"
+            },
+            "CreditBatch": {
+                "properties": {
+                    "quantity_of_credits": {
+                        "type": "integer",
+                        "title": "Quantity Of Credits"
+                    },
+                    "serial_number": {
+                        "type": "string",
+                        "title": "Serial Number"
+                    },
+                    "sub_account_id": {
+                        "type": "integer",
+                        "title": "Sub Account Id"
+                    },
+                    "sub_account_name": {
+                        "type": "string",
+                        "title": "Sub Account Name"
+                    },
+                    "vintage": {
+                        "type": "string",
+                        "title": "Vintage"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "title": "Project Id"
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "title": "Project Name"
+                    },
+                    "project_type": {
+                        "type": "string",
+                        "title": "Project Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "quantity_of_credits",
+                    "serial_number",
+                    "sub_account_id",
+                    "sub_account_name",
+                    "vintage",
+                    "project_id",
+                    "project_name",
+                    "project_type"
+                ],
+                "title": "CreditBatch"
+            },
+            "DestAssetItem": {
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "title": "Code"
+                    },
+                    "issuer": {
+                        "type": "string",
+                        "title": "Issuer"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "title": "Amount"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "code",
+                    "issuer",
+                    "amount"
+                ],
+                "title": "DestAssetItem"
+            },
+            "FlightEstimateResponse": {
+                "properties": {
+                    "departure_name": {
+                        "type": "string",
+                        "title": "Departure Name"
+                    },
+                    "destination_name": {
+                        "type": "string",
+                        "title": "Destination Name"
+                    },
+                    "distance_km": {
+                        "type": "string",
+                        "title": "Distance Km"
+                    },
+                    "co2_tonnes": {
+                        "type": "string",
+                        "title": "Co2 Tonnes"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "departure_name",
+                    "destination_name",
+                    "distance_km",
+                    "co2_tonnes"
+                ],
+                "title": "FlightEstimateResponse"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "InstrumentItem": {
+                "properties": {
+                    "issuance_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Issuance Date"
+                    },
+                    "instrument_type": {
+                        "type": "string",
+                        "const": "VCU",
+                        "title": "Instrument Type"
+                    },
+                    "vintage_start": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Vintage Start"
+                    },
+                    "vintage_end": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Vintage End"
+                    },
+                    "total_vintage_quantity": {
+                        "type": "integer",
+                        "title": "Total Vintage Quantity"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "issuance_date",
+                    "instrument_type",
+                    "vintage_start",
+                    "vintage_end",
+                    "total_vintage_quantity"
+                ],
+                "title": "InstrumentItem"
+            },
+            "MemoItem": {
+                "properties": {
+                    "type": {
+                        "$ref": "#/components/schemas/MemoType"
+                    },
+                    "value": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Value"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "type",
+                    "value"
+                ],
+                "title": "MemoItem"
+            },
+            "MemoType": {
+                "type": "string",
+                "enum": [
+                    "text",
+                    "hash",
+                    "none"
+                ],
+                "title": "MemoType"
+            },
+            "MintedBlockItem": {
+                "properties": {
+                    "serial_hash": {
+                        "type": "string",
+                        "title": "Serial Hash"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "title": "Size"
+                    },
+                    "credits_remaining": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Credits Remaining"
+                    },
+                    "credits_remaining_on_date": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Credits Remaining On Date"
+                    },
+                    "transaction_hash": {
+                        "type": "string",
+                        "title": "Transaction Hash"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "serial_number": {
+                        "type": "string",
+                        "title": "Serial Number"
+                    },
+                    "sub_account_id": {
+                        "type": "integer",
+                        "title": "Sub Account Id"
+                    },
+                    "sub_account_name": {
+                        "type": "string",
+                        "title": "Sub Account Name"
+                    },
+                    "vintage_start": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Vintage Start"
+                    },
+                    "vintage_end": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Vintage End"
+                    },
+                    "vcs_project": {
+                        "$ref": "#/components/schemas/VcsProjectSummary"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "serial_hash",
+                    "size",
+                    "transaction_hash",
+                    "created_at",
+                    "serial_number",
+                    "sub_account_id",
+                    "sub_account_name",
+                    "vintage_start",
+                    "vintage_end",
+                    "vcs_project"
+                ],
+                "title": "MintedBlockItem"
+            },
+            "MintedBlockListResponse": {
+                "properties": {
+                    "total_credits_minted": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Total Credits Minted"
+                    },
+                    "total_credits_remaining": {
+                        "type": "integer",
+                        "title": "Total Credits Remaining"
+                    },
+                    "minted_blocks": {
+                        "items": {
+                            "$ref": "#/components/schemas/MintedBlockItem"
+                        },
+                        "type": "array",
+                        "title": "Minted Blocks"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total_credits_remaining",
+                    "minted_blocks"
+                ],
+                "title": "MintedBlockListResponse"
+            },
+            "NotFoundErrorItem": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Loc"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Msg"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Type"
+                    },
+                    "funder": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Funder"
+                    },
+                    "recipient": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Recipient"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type",
+                    "funder",
+                    "recipient"
+                ],
+                "title": "NotFoundErrorItem"
+            },
+            "NotFoundErrorResponse": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/NotFoundErrorItem"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "NotFoundErrorResponse"
+            },
+            "PaymentAsset": {
+                "type": "string",
+                "enum": [
+                    "XLM",
+                    "USDC",
+                    "any"
+                ],
+                "title": "PaymentAsset"
+            },
+            "RequestCertificateResponse": {
+                "properties": {
+                    "account": {
+                        "type": "string",
+                        "title": "Account"
+                    },
+                    "certificate_amount": {
+                        "type": "integer",
+                        "title": "Certificate Amount"
+                    },
+                    "pending_balance_after_retirement": {
+                        "type": "string",
+                        "title": "Pending Balance After Retirement"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "account",
+                    "certificate_amount",
+                    "pending_balance_after_retirement"
+                ],
+                "title": "RequestCertificateResponse"
+            },
+            "RetiredFromBlock": {
+                "properties": {
+                    "block_hash": {
+                        "type": "string",
+                        "title": "Block Hash"
+                    },
+                    "vcu_amount": {
+                        "type": "integer",
+                        "title": "Vcu Amount"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "block_hash",
+                    "vcu_amount"
+                ],
+                "title": "RetiredFromBlock"
+            },
+            "RetirementDetail": {
+                "properties": {
+                    "certificate_id": {
+                        "type": "integer",
+                        "title": "Certificate Id"
+                    },
+                    "registry_url": {
+                        "type": "string",
+                        "title": "Registry Url"
+                    },
+                    "vcu_amount": {
+                        "type": "integer",
+                        "title": "Vcu Amount"
+                    },
+                    "serial_number": {
+                        "type": "string",
+                        "title": "Serial Number"
+                    },
+                    "retirement_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Retirement Date"
+                    },
+                    "beneficiary": {
+                        "type": "string",
+                        "title": "Beneficiary"
+                    },
+                    "details": {
+                        "type": "string",
+                        "title": "Details"
+                    },
+                    "vcs_project": {
+                        "$ref": "#/components/schemas/VcsProjectDetail"
+                    },
+                    "instrument": {
+                        "$ref": "#/components/schemas/InstrumentItem"
+                    },
+                    "retired_from": {
+                        "items": {
+                            "$ref": "#/components/schemas/RetiredFromBlock"
+                        },
+                        "type": "array",
+                        "title": "Retired From"
+                    },
+                    "sink_statuses": {
+                        "items": {
+                            "$ref": "#/components/schemas/SinkTxSummary"
+                        },
+                        "type": "array",
+                        "title": "Sink Statuses"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "certificate_id",
+                    "registry_url",
+                    "vcu_amount",
+                    "serial_number",
+                    "retirement_date",
+                    "beneficiary",
+                    "details",
+                    "vcs_project",
+                    "instrument",
+                    "retired_from",
+                    "sink_statuses"
+                ],
+                "title": "RetirementDetail"
+            },
+            "RetirementItem": {
+                "properties": {
+                    "certificate_id": {
+                        "type": "integer",
+                        "title": "Certificate Id"
+                    },
+                    "registry_url": {
+                        "type": "string",
+                        "title": "Registry Url"
+                    },
+                    "vcu_amount": {
+                        "type": "integer",
+                        "title": "Vcu Amount"
+                    },
+                    "serial_number": {
+                        "type": "string",
+                        "title": "Serial Number"
+                    },
+                    "retirement_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Retirement Date"
+                    },
+                    "beneficiary": {
+                        "type": "string",
+                        "title": "Beneficiary"
+                    },
+                    "details": {
+                        "type": "string",
+                        "title": "Details"
+                    },
+                    "vcs_project_id": {
+                        "type": "integer",
+                        "title": "Vcs Project Id"
+                    },
+                    "instrument": {
+                        "$ref": "#/components/schemas/InstrumentItem"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "certificate_id",
+                    "registry_url",
+                    "vcu_amount",
+                    "serial_number",
+                    "retirement_date",
+                    "beneficiary",
+                    "details",
+                    "vcs_project_id",
+                    "instrument"
+                ],
+                "title": "RetirementItem"
+            },
+            "RetirementListResponse": {
+                "properties": {
+                    "total_carbon_retired": {
+                        "type": "integer",
+                        "title": "Total Carbon Retired"
+                    },
+                    "retirements": {
+                        "items": {
+                            "$ref": "#/components/schemas/RetirementItem"
+                        },
+                        "type": "array",
+                        "title": "Retirements"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total_carbon_retired",
+                    "retirements"
+                ],
+                "title": "RetirementListResponse"
+            },
+            "RetirementSummary": {
+                "properties": {
+                    "certificate_id": {
+                        "type": "integer",
+                        "title": "Certificate Id"
+                    },
+                    "amount_filled": {
+                        "type": "string",
+                        "title": "Amount Filled"
+                    },
+                    "finalized": {
+                        "type": "boolean",
+                        "title": "Finalized"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "certificate_id",
+                    "amount_filled",
+                    "finalized"
+                ],
+                "title": "RetirementSummary"
+            },
+            "SEP10ChallengeResponse": {
+                "properties": {
+                    "transaction": {
+                        "type": "string",
+                        "title": "Transaction"
+                    },
+                    "network_passphrase": {
+                        "type": "string",
+                        "title": "Network Passphrase"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "transaction",
+                    "network_passphrase"
+                ],
+                "title": "SEP10ChallengeResponse"
+            },
+            "SEP10ErrorResponse": {
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "SEP10ErrorResponse"
+            },
+            "SEP10TokenResponse": {
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "title": "Token"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "token"
+                ],
+                "title": "SEP10TokenResponse"
+            },
+            "SinkTxItem": {
+                "properties": {
+                    "hash": {
+                        "type": "string",
+                        "title": "Hash"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "funder": {
+                        "type": "string",
+                        "title": "Funder"
+                    },
+                    "recipient": {
+                        "type": "string",
+                        "title": "Recipient"
+                    },
+                    "carbon_amount": {
+                        "type": "string",
+                        "title": "Carbon Amount"
+                    },
+                    "source_asset": {
+                        "$ref": "#/components/schemas/SourceAssetItem"
+                    },
+                    "dest_asset": {
+                        "$ref": "#/components/schemas/DestAssetItem"
+                    },
+                    "vcs_project_id": {
+                        "type": "integer",
+                        "title": "Vcs Project Id"
+                    },
+                    "memo": {
+                        "$ref": "#/components/schemas/MemoItem"
+                    },
+                    "paging_token": {
+                        "type": "string",
+                        "title": "Paging Token"
+                    },
+                    "retirement_finalized": {
+                        "type": "boolean",
+                        "title": "Retirement Finalized"
+                    },
+                    "retirements": {
+                        "items": {
+                            "$ref": "#/components/schemas/RetirementSummary"
+                        },
+                        "type": "array",
+                        "title": "Retirements"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "hash",
+                    "created_at",
+                    "funder",
+                    "recipient",
+                    "carbon_amount",
+                    "source_asset",
+                    "dest_asset",
+                    "vcs_project_id",
+                    "memo",
+                    "paging_token",
+                    "retirement_finalized",
+                    "retirements"
+                ],
+                "title": "SinkTxItem"
+            },
+            "SinkTxListResponse": {
+                "properties": {
+                    "retirement_grace_days": {
+                        "type": "integer",
+                        "title": "Retirement Grace Days"
+                    },
+                    "total_carbon_sunk": {
+                        "type": "string",
+                        "title": "Total Carbon Sunk"
+                    },
+                    "total_carbon_retired": {
+                        "type": "string",
+                        "title": "Total Carbon Retired"
+                    },
+                    "total_carbon_pending": {
+                        "type": "string",
+                        "title": "Total Carbon Pending"
+                    },
+                    "transactions": {
+                        "items": {
+                            "$ref": "#/components/schemas/SinkTxItem"
+                        },
+                        "type": "array",
+                        "title": "Transactions"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "retirement_grace_days",
+                    "total_carbon_sunk",
+                    "total_carbon_retired",
+                    "total_carbon_pending",
+                    "transactions"
+                ],
+                "title": "SinkTxListResponse"
+            },
+            "SinkTxSummary": {
+                "properties": {
+                    "sinking_tx_hash": {
+                        "type": "string",
+                        "title": "Sinking Tx Hash"
+                    },
+                    "amount_filled": {
+                        "type": "string",
+                        "title": "Amount Filled"
+                    },
+                    "finalized": {
+                        "type": "boolean",
+                        "title": "Finalized"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "sinking_tx_hash",
+                    "amount_filled",
+                    "finalized"
+                ],
+                "title": "SinkTxSummary"
+            },
+            "SinkingResponse": {
+                "properties": {
+                    "funder": {
+                        "type": "string",
+                        "title": "Funder"
+                    },
+                    "recipient": {
+                        "type": "string",
+                        "title": "Recipient"
+                    },
+                    "carbon_amount": {
+                        "type": "string",
+                        "title": "Carbon Amount"
+                    },
+                    "usdc_amount": {
+                        "type": "string",
+                        "title": "Usdc Amount"
+                    },
+                    "payment_asset": {
+                        "type": "string",
+                        "title": "Payment Asset"
+                    },
+                    "payment_max_amount": {
+                        "type": "string",
+                        "title": "Payment Max Amount"
+                    },
+                    "vcs_project_id": {
+                        "type": "integer",
+                        "title": "Vcs Project Id"
+                    },
+                    "tx_xdr": {
+                        "type": "string",
+                        "title": "Tx Xdr"
+                    },
+                    "txrep": {
+                        "type": "string",
+                        "title": "Txrep",
+                        "default": "",
+                        "deprecated": true
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "funder",
+                    "recipient",
+                    "carbon_amount",
+                    "usdc_amount",
+                    "payment_asset",
+                    "payment_max_amount",
+                    "vcs_project_id",
+                    "tx_xdr"
+                ],
+                "title": "SinkingResponse"
+            },
+            "SourceAssetItem": {
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "title": "Code"
+                    },
+                    "issuer": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Issuer"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "title": "Amount"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "code",
+                    "issuer",
+                    "amount"
+                ],
+                "title": "SourceAssetItem"
+            },
+            "USDQuoteResponse": {
+                "properties": {
+                    "usd_amount": {
+                        "type": "string",
+                        "title": "Usd Amount"
+                    },
+                    "total_carbon": {
+                        "type": "string",
+                        "title": "Total Carbon"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "usd_amount",
+                    "total_carbon"
+                ],
+                "title": "USDQuoteResponse"
+            },
+            "UpstreamErrorItem": {
+                "properties": {
+                    "msg": {
+                        "type": "string",
+                        "title": "Msg"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Type"
+                    },
+                    "url": {
+                        "type": "string",
+                        "title": "Url"
+                    },
+                    "response": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Response"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "msg",
+                    "type",
+                    "url",
+                    "response"
+                ],
+                "title": "UpstreamErrorItem"
+            },
+            "UpstreamErrorResponse": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/UpstreamErrorItem"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "UpstreamErrorResponse"
+            },
+            "ValidateChallengeBody": {
+                "properties": {
+                    "transaction": {
+                        "type": "string",
+                        "minLength": 25,
+                        "title": "Transaction"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "transaction"
+                ],
+                "title": "ValidateChallengeBody"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "VcsProject": {
+                "type": "string",
+                "enum": [
+                    "1360"
+                ],
+                "title": "VcsProject"
+            },
+            "VcsProjectDetail": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "registry_url": {
+                        "type": "string",
+                        "title": "Registry Url"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    },
+                    "protocol": {
+                        "type": "string",
+                        "title": "Protocol"
+                    },
+                    "additional_certifications": {
+                        "type": "string",
+                        "title": "Additional Certifications"
+                    },
+                    "region": {
+                        "type": "string",
+                        "title": "Region"
+                    },
+                    "country": {
+                        "type": "string",
+                        "title": "Country"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "registry_url",
+                    "name",
+                    "category",
+                    "protocol",
+                    "additional_certifications",
+                    "region",
+                    "country"
+                ],
+                "title": "VcsProjectDetail"
+            },
+            "VcsProjectSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "registry_url": {
+                        "type": "string",
+                        "title": "Registry Url"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "category": {
+                        "type": "string",
+                        "title": "Category"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "registry_url",
+                    "name",
+                    "category"
+                ],
+                "title": "VcsProjectSummary"
+            },
+            "VerraInventoryResponse": {
+                "properties": {
+                    "total_inventory_credits": {
+                        "type": "integer",
+                        "title": "Total Inventory Credits"
+                    },
+                    "credit_batches": {
+                        "items": {
+                            "$ref": "#/components/schemas/CreditBatch"
+                        },
+                        "type": "array",
+                        "title": "Credit Batches"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total_inventory_credits",
+                    "credit_batches"
+                ],
+                "title": "VerraInventoryResponse"
+            },
+            "VerraRetirementItem": {
+                "properties": {
+                    "issuance_date": {
+                        "type": "string",
+                        "title": "Issuance Date"
+                    },
+                    "instrument_type": {
+                        "type": "string",
+                        "title": "Instrument Type"
+                    },
+                    "vintage_start": {
+                        "type": "string",
+                        "title": "Vintage Start"
+                    },
+                    "vintage_end": {
+                        "type": "string",
+                        "title": "Vintage End"
+                    },
+                    "total_vintage_quantity": {
+                        "type": "integer",
+                        "title": "Total Vintage Quantity"
+                    },
+                    "vcs_id": {
+                        "type": "string",
+                        "title": "Vcs Id"
+                    },
+                    "vcs_name": {
+                        "type": "string",
+                        "title": "Vcs Name"
+                    },
+                    "vcs_category": {
+                        "type": "string",
+                        "title": "Vcs Category"
+                    },
+                    "vcs_protocol": {
+                        "type": "string",
+                        "title": "Vcs Protocol"
+                    },
+                    "additional_certifications": {
+                        "type": "string",
+                        "title": "Additional Certifications"
+                    },
+                    "region": {
+                        "type": "string",
+                        "title": "Region"
+                    },
+                    "country": {
+                        "type": "string",
+                        "title": "Country"
+                    },
+                    "vcu_amount": {
+                        "type": "integer",
+                        "title": "Vcu Amount"
+                    },
+                    "serial_numbers": {
+                        "type": "string",
+                        "title": "Serial Numbers"
+                    },
+                    "retirement_date": {
+                        "type": "string",
+                        "title": "Retirement Date"
+                    },
+                    "retirement_beneficiary": {
+                        "type": "string",
+                        "title": "Retirement Beneficiary"
+                    },
+                    "retirement_details": {
+                        "type": "string",
+                        "title": "Retirement Details"
+                    },
+                    "certificate_id": {
+                        "type": "string",
+                        "title": "Certificate Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "issuance_date",
+                    "instrument_type",
+                    "vintage_start",
+                    "vintage_end",
+                    "total_vintage_quantity",
+                    "vcs_id",
+                    "vcs_name",
+                    "vcs_category",
+                    "vcs_protocol",
+                    "additional_certifications",
+                    "region",
+                    "country",
+                    "vcu_amount",
+                    "serial_numbers",
+                    "retirement_date",
+                    "retirement_beneficiary",
+                    "retirement_details",
+                    "certificate_id"
+                ],
+                "title": "VerraRetirementItem"
+            },
+            "VerraRetirementsResponse": {
+                "properties": {
+                    "total_count": {
+                        "type": "integer",
+                        "title": "Total Count"
+                    },
+                    "count_exceeded": {
+                        "type": "boolean",
+                        "title": "Count Exceeded"
+                    },
+                    "total_amount_retired": {
+                        "type": "integer",
+                        "title": "Total Amount Retired"
+                    },
+                    "retirements": {
+                        "items": {
+                            "$ref": "#/components/schemas/VerraRetirementItem"
+                        },
+                        "type": "array",
+                        "title": "Retirements"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total_count",
+                    "count_exceeded",
+                    "total_amount_retired",
+                    "retirements"
+                ],
+                "title": "VerraRetirementsResponse"
+            }
+        },
+        "securitySchemes": {
+            "SEP-10": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}
