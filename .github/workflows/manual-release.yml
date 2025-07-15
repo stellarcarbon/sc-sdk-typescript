@@ -1,4 +1,4 @@
-name: Manual SC SDK Release
+name: Manual Release
 
 on:
   workflow_dispatch:
@@ -30,6 +30,9 @@ jobs:
 
       - name: Update to latest openapi.json
         run: npm run update
+
+      - name: Run tests
+        run: npm run test
 
       - name: Build
         run: npm run build

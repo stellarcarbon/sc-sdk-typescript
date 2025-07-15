@@ -1,7 +1,7 @@
 import { getSinkTxList } from "../src";
 
-describe("SDK smoke", () => {
-  it("can fetch transaction list", async () => {
+describe("Sanity check", () => {
+  it("Can fetch transaction list", async () => {
     const { data } = await getSinkTxList({
       query: {
         for_funder: "GAVF6ZB7Z7FKCWM5HEY2OV4ENPK3OSSHMFTVR4HHSBFHKW36U3FUH2CB",
