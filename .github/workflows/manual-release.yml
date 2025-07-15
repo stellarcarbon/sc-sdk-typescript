@@ -1,13 +1,12 @@
-# .github/workflows/manual-release.yml
-name: Manual Release
+name: Manual SC SDK Release
 
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Publish dry-run? (true/false)'
+        description: "Do dry-run? (true/false)"
         required: true
-        default: 'true'
+        default: "true"
 
 jobs:
   release:
@@ -15,36 +14,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. haal de code en de volledige git-geschiedenis op
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. zorg dat Node.js klaarstaat
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org/"
 
-      # 3. installeer deps
       - name: Install dependencies
         run: npm ci
 
-      # 4. Versie nummer lezen
-      - name: Get version
+      - name: Update to latest openapi.json
+        run: npm run update
+
+      - name: Build
+        run: npm run build
+
+      - name: Get version from package.json
         id: get_version
-        # run: echo "::set-output name=VER::v0.1.0"
         run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
-      # 5. commit de bijgewerkte package.json en maak een tag
+      # If any new updates to openapi.json, commit it
       - name: Commit release bump
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # stage any changes — for example package.json, lockfile, or lib/
           git add .
           if ! git diff --cached --quiet; then
             git commit -m "prepare release $V"
@@ -61,14 +60,13 @@ jobs:
           git tag -a "v$V" -m "Release v$V"
           git push origin "v$V"
 
-      # 6. publiceer naar npm 
       - name: Publish to npm
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "=== DRY RUN: npm publish --dry-run ==="
+            echo "=== DRY RUN ==="
             npm publish --dry-run --access public
           else
-            echo "=== REAL PUBLISH: npm publish ==="
+            echo "=== REAL PUBLISH ==="
             npm publish --access public
           fi
         env:
