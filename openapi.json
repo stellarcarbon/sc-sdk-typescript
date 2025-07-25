@@ -2,7 +2,9 @@
     "openapi": "3.1.0",
     "info": {
         "title": "Stellarcarbon API",
-        "version": "0.17.0"
+        "summary": "Protect the rainforest with Stellarcarbon. Breathing space, preserved.",
+        "description": "This API is ideal for developers and businesses looking to integrate CO₂ compensation into their existing products. It is permissionless: you don't need an API key. We publish an OpenAPI schema which can be used to automatically generate API clients for many programming languages, making your integration easy to set up and maintain.\n\nSee the API in action within our dApp: <https://new.stellarcarbon.io>\n\nThere is an official SDK based on our OpenAPI schema for JS/TS: <https://www.npmjs.com/package/@stellarcarbon/sc-sdk>\n\nThe interactive documentation below is organized into categories. It specifies — for each endpoint — the request and response schemas. Use the \"try it out\" button to unlock the form fields, and confirm with \"execute\" to get an actual response from the API.",
+        "version": "0.18.0"
     },
     "paths": {
         "/auth/sep-10": {
