@@ -64,6 +64,24 @@ export type CarbonStats = {
 };
 
 /**
+ * CreateRecipientPayload
+ */
+export type CreateRecipientPayload = {
+    /**
+     * the address that is used to identify this recipient
+     */
+    address: string;
+    /**
+     * the recipient's email address
+     */
+    email: string;
+    /**
+     * the recipient's name
+     */
+    name?: string | null;
+};
+
+/**
  * CreditBatch
  */
 export type CreditBatch = {
@@ -302,6 +320,53 @@ export type NotFoundErrorResponse = {
  * PaymentAsset
  */
 export type PaymentAsset = 'XLM' | 'USDC' | 'any';
+
+/**
+ * Recipient
+ */
+export type Recipient = {
+    /**
+     * the time at which this recipient was last updated
+     */
+    modified_at: string;
+    /**
+     * the recipient's email address
+     */
+    email: string;
+    /**
+     * the recipient's name
+     */
+    name?: string | null;
+};
+
+/**
+ * RecipientCreatedResponse
+ */
+export type RecipientCreatedResponse = {
+    /**
+     * the address that is used to identify this recipient
+     */
+    address: string;
+    /**
+     * Message
+     */
+    message: string;
+    recipient: Recipient;
+};
+
+/**
+ * RecipientFields
+ */
+export type RecipientFields = {
+    /**
+     * the recipient's email address
+     */
+    email: string;
+    /**
+     * the recipient's name
+     */
+    name?: string | null;
+};
 
 /**
  * RequestCertificateResponse
@@ -1473,6 +1538,7 @@ export type GetSinkTxsForRecipientData = {
     path: {
         /**
          * Recipient Address
+         * the address by which sinking transactions are filtered
          */
         recipient_address: string;
     };
@@ -1528,6 +1594,7 @@ export type GetRetirementsForBeneficiaryData = {
     path: {
         /**
          * Beneficiary Address
+         * the address which is the beneficiary of the retirements
          */
         beneficiary_address: string;
     };
@@ -1583,6 +1650,7 @@ export type GetRecipientStatsData = {
     path: {
         /**
          * Recipient Address
+         * the address by which the stats are filtered
          */
         recipient_address: string;
     };
@@ -1616,12 +1684,190 @@ export type GetRecipientStatsResponses = {
 
 export type GetRecipientStatsResponse = GetRecipientStatsResponses[keyof GetRecipientStatsResponses];
 
+export type CreateRecipientData = {
+    body: CreateRecipientPayload;
+    path?: never;
+    query?: never;
+    url: '/recipients/';
+};
+
+export type CreateRecipientErrors = {
+    /**
+     * The request you sent was invalid in some way
+     */
+    400: unknown;
+    /**
+     * Authorization header is missing or malformed.
+     */
+    403: Sep10ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * An unhandled error occurred on the server
+     */
+    500: unknown;
+};
+
+export type CreateRecipientError = CreateRecipientErrors[keyof CreateRecipientErrors];
+
+export type CreateRecipientResponses = {
+    /**
+     * Successful Response
+     */
+    201: RecipientCreatedResponse;
+};
+
+export type CreateRecipientResponse = CreateRecipientResponses[keyof CreateRecipientResponses];
+
+export type DeleteRecipientData = {
+    body?: never;
+    path: {
+        /**
+         * Recipient Address
+         * the address that is used to identify this recipient
+         */
+        recipient_address: string;
+    };
+    query?: never;
+    url: '/recipients/{recipient_address}';
+};
+
+export type DeleteRecipientErrors = {
+    /**
+     * The request you sent was invalid in some way
+     */
+    400: unknown;
+    /**
+     * Authorization header is missing or malformed.
+     */
+    403: Sep10ErrorResponse;
+    /**
+     * Recipient was not found in our database
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * An unhandled error occurred on the server
+     */
+    500: unknown;
+};
+
+export type DeleteRecipientError = DeleteRecipientErrors[keyof DeleteRecipientErrors];
+
+export type DeleteRecipientResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteRecipientResponse = DeleteRecipientResponses[keyof DeleteRecipientResponses];
+
+export type GetRecipientData = {
+    body?: never;
+    path: {
+        /**
+         * Recipient Address
+         * the address that is used to identify this recipient
+         */
+        recipient_address: string;
+    };
+    query?: never;
+    url: '/recipients/{recipient_address}';
+};
+
+export type GetRecipientErrors = {
+    /**
+     * The request you sent was invalid in some way
+     */
+    400: unknown;
+    /**
+     * Authorization header is missing or malformed.
+     */
+    403: Sep10ErrorResponse;
+    /**
+     * Recipient was not found in our database
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * An unhandled error occurred on the server
+     */
+    500: unknown;
+};
+
+export type GetRecipientError = GetRecipientErrors[keyof GetRecipientErrors];
+
+export type GetRecipientResponses = {
+    /**
+     * Successful Response
+     */
+    200: Recipient;
+};
+
+export type GetRecipientResponse = GetRecipientResponses[keyof GetRecipientResponses];
+
+export type UpdateRecipientData = {
+    body: RecipientFields;
+    path: {
+        /**
+         * Recipient Address
+         * the address that is used to identify this recipient
+         */
+        recipient_address: string;
+    };
+    query?: never;
+    url: '/recipients/{recipient_address}';
+};
+
+export type UpdateRecipientErrors = {
+    /**
+     * The request you sent was invalid in some way
+     */
+    400: unknown;
+    /**
+     * Authorization header is missing or malformed.
+     */
+    403: Sep10ErrorResponse;
+    /**
+     * Recipient was not found in our database
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * An unhandled error occurred on the server
+     */
+    500: unknown;
+};
+
+export type UpdateRecipientError = UpdateRecipientErrors[keyof UpdateRecipientErrors];
+
+export type UpdateRecipientResponses = {
+    /**
+     * Successful Response
+     */
+    200: Recipient;
+};
+
+export type UpdateRecipientResponse = UpdateRecipientResponses[keyof UpdateRecipientResponses];
+
 export type RequestCertificateData = {
     body?: never;
     path: {
         /**
          * Recipient Address
-         * the account for which a retirement certificate will be issued
+         * the address for which a retirement certificate will be issued
          */
         recipient_address: string;
     };

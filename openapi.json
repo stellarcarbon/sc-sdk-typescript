@@ -4,7 +4,7 @@
         "title": "Stellarcarbon API",
         "summary": "Protect the rainforest with Stellarcarbon. Breathing space, preserved.",
         "description": "This API is ideal for developers and businesses looking to integrate CO₂ compensation into their existing products. It is permissionless: you don't need an API key. We publish an OpenAPI schema which can be used to automatically generate API clients for many programming languages, making your integration easy to set up and maintain.\n\nSee the API in action within our dApp: <https://new.stellarcarbon.io>\n\nThere is an official SDK based on our OpenAPI schema for JS/TS: <https://www.npmjs.com/package/@stellarcarbon/sc-sdk>\n\nThe interactive documentation below is organized into categories. It specifies — for each endpoint — the request and response schemas. Use the \"try it out\" button to unlock the form fields, and confirm with \"execute\" to get an actual response from the API.",
-        "version": "0.18.0"
+        "version": "0.19.0"
     },
     "paths": {
         "/auth/sep-10": {
@@ -1233,8 +1233,11 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address by which sinking transactions are filtered",
                             "title": "Recipient Address"
-                        }
+                        },
+                        "description": "the address by which sinking transactions are filtered"
                     },
                     {
                         "name": "finalized",
@@ -1346,8 +1349,11 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address which is the beneficiary of the retirements",
                             "title": "Beneficiary Address"
-                        }
+                        },
+                        "description": "the address which is the beneficiary of the retirements"
                     },
                     {
                         "name": "project",
@@ -1459,8 +1465,11 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address by which the stats are filtered",
                             "title": "Recipient Address"
-                        }
+                        },
+                        "description": "the address by which the stats are filtered"
                     }
                 ],
                 "responses": {
@@ -1476,6 +1485,274 @@
                     },
                     "400": {
                         "description": "The request you sent was invalid in some way"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            }
+        },
+        "/recipients/": {
+            "post": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Create a new recipient in our database.",
+                "operationId": "create_recipient",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRecipientPayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RecipientCreatedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "403": {
+                        "description": "Authorization header is missing or malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                },
+                "security": [
+                    {
+                        "SEP-10": []
+                    }
+                ]
+            }
+        },
+        "/recipients/{recipient_address}": {
+            "get": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Fetch a single recipient from our database.",
+                "operationId": "get_recipient",
+                "security": [
+                    {
+                        "SEP-10": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address that is used to identify this recipient",
+                            "title": "Recipient Address"
+                        },
+                        "description": "the address that is used to identify this recipient"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "403": {
+                        "description": "Authorization header is missing or malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recipient was not found in our database"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Update any of a recipient's fields; modified_at is automatically set.",
+                "operationId": "update_recipient",
+                "security": [
+                    {
+                        "SEP-10": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address that is used to identify this recipient",
+                            "title": "Recipient Address"
+                        },
+                        "description": "the address that is used to identify this recipient"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecipientFields"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "403": {
+                        "description": "Authorization header is missing or malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recipient was not found in our database"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unhandled error occurred on the server"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Delete a recipient from our database.",
+                "operationId": "delete_recipient",
+                "security": [
+                    {
+                        "SEP-10": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "recipient_address",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address that is used to identify this recipient",
+                            "title": "Recipient Address"
+                        },
+                        "description": "the address that is used to identify this recipient"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "400": {
+                        "description": "The request you sent was invalid in some way"
+                    },
+                    "403": {
+                        "description": "Authorization header is missing or malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SEP10ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recipient was not found in our database"
                     },
                     "422": {
                         "description": "Validation Error",
@@ -1512,10 +1789,11 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "description": "the account for which a retirement certificate will be issued",
+                            "pattern": "^[GMC][A-Z2-7]{55}$",
+                            "description": "the address for which a retirement certificate will be issued",
                             "title": "Recipient Address"
                         },
-                        "description": "the account for which a retirement certificate will be issued"
+                        "description": "the address for which a retirement certificate will be issued"
                     },
                     {
                         "name": "email",
@@ -2375,6 +2653,38 @@
                 ],
                 "title": "CarbonStats"
             },
+            "CreateRecipientPayload": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "pattern": "^[GMC][A-Z2-7]{55}$",
+                        "title": "the address that is used to identify this recipient"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "the recipient's email address"
+                    },
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "the recipient's name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "address",
+                    "email"
+                ],
+                "title": "CreateRecipientPayload"
+            },
             "CreditBatch": {
                 "properties": {
                     "quantity_of_credits": {
@@ -2745,6 +3055,87 @@
                     "any"
                 ],
                 "title": "PaymentAsset"
+            },
+            "Recipient": {
+                "properties": {
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "the time at which this recipient was last updated"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "the recipient's email address"
+                    },
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "the recipient's name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "modified_at",
+                    "email"
+                ],
+                "title": "Recipient"
+            },
+            "RecipientCreatedResponse": {
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "pattern": "^[GMC][A-Z2-7]{55}$",
+                        "title": "the address that is used to identify this recipient"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "recipient": {
+                        "$ref": "#/components/schemas/Recipient"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "address",
+                    "message",
+                    "recipient"
+                ],
+                "title": "RecipientCreatedResponse"
+            },
+            "RecipientFields": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "the recipient's email address"
+                    },
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "the recipient's name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "email"
+                ],
+                "title": "RecipientFields"
             },
             "RequestCertificateResponse": {
                 "properties": {

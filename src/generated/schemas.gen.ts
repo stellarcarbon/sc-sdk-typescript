@@ -70,6 +70,36 @@ export const CarbonStatsSchema = {
     title: 'CarbonStats'
 } as const;
 
+export const CreateRecipientPayloadSchema = {
+    properties: {
+        address: {
+            type: 'string',
+            pattern: '^[GMC][A-Z2-7]{55}$',
+            title: 'the address that is used to identify this recipient'
+        },
+        email: {
+            type: 'string',
+            format: 'email',
+            title: "the recipient's email address"
+        },
+        name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 200
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: "the recipient's name"
+        }
+    },
+    type: 'object',
+    required: ['address', 'email'],
+    title: 'CreateRecipientPayload'
+} as const;
+
 export const CreditBatchSchema = {
     properties: {
         quantity_of_credits: {
@@ -394,6 +424,81 @@ export const PaymentAssetSchema = {
     type: 'string',
     enum: ['XLM', 'USDC', 'any'],
     title: 'PaymentAsset'
+} as const;
+
+export const RecipientSchema = {
+    properties: {
+        modified_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'the time at which this recipient was last updated'
+        },
+        email: {
+            type: 'string',
+            format: 'email',
+            title: "the recipient's email address"
+        },
+        name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 200
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: "the recipient's name"
+        }
+    },
+    type: 'object',
+    required: ['modified_at', 'email'],
+    title: 'Recipient'
+} as const;
+
+export const RecipientCreatedResponseSchema = {
+    properties: {
+        address: {
+            type: 'string',
+            pattern: '^[GMC][A-Z2-7]{55}$',
+            title: 'the address that is used to identify this recipient'
+        },
+        message: {
+            type: 'string',
+            title: 'Message'
+        },
+        recipient: {
+            '$ref': '#/components/schemas/Recipient'
+        }
+    },
+    type: 'object',
+    required: ['address', 'message', 'recipient'],
+    title: 'RecipientCreatedResponse'
+} as const;
+
+export const RecipientFieldsSchema = {
+    properties: {
+        email: {
+            type: 'string',
+            format: 'email',
+            title: "the recipient's email address"
+        },
+        name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 200
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: "the recipient's name"
+        }
+    },
+    type: 'object',
+    required: ['email'],
+    title: 'RecipientFields'
 } as const;
 
 export const RequestCertificateResponseSchema = {
