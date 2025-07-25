@@ -45,8 +45,8 @@ async function main() {
       throw new Error("No info.version in fetched spec");
     }
     const pkg = JSON.parse(fs.readFileSync(PKG_PATH, "utf8"));
-    // pkg.version = openapi.info.version;
-    pkg.version = "0.1.5";
+    pkg.version = openapi.info.version;
+
     fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf8");
     console.log(`✔️  Synced package.json version → ${pkg.version}`);
   } catch (err) {
