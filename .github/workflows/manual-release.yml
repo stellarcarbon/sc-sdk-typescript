@@ -41,8 +41,9 @@ jobs:
         id: get_version
         run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
-      # If any new updates to openapi.json, commit it
+      # If any new updates to the api, commit
       - name: Commit release bump
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git config user.name "github-actions[bot]"
@@ -56,6 +57,7 @@ jobs:
           fi
 
       - name: Create & push tag
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git config user.name "github-actions[bot]"
@@ -63,7 +65,7 @@ jobs:
           git tag -a "v$V" -m "Release v$V"
           git push origin "v$V"
 
-      - name: Publish to npm
+      - name: Publish to npm (or dry run)
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             echo "=== DRY RUN ==="
