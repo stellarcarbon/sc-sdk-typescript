@@ -1211,6 +1211,7 @@ export type DeprecatedBuildSinkCarbonXdrData = {
         /**
          * Email
          * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
+         * @deprecated
          */
         email?: string | null;
     };
@@ -1444,6 +1445,7 @@ export type BuildSinkCarbonXdrData = {
         /**
          * Email
          * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
+         * @deprecated
          */
         email?: string | null;
     };
@@ -1875,6 +1877,7 @@ export type RequestCertificateData = {
         /**
          * Email
          * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
+         * @deprecated
          */
         email: string;
     };
