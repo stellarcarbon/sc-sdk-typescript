@@ -82,44 +82,6 @@ export type CreateRecipientPayload = {
 };
 
 /**
- * CreditBatch
- */
-export type CreditBatch = {
-    /**
-     * Quantity Of Credits
-     */
-    quantity_of_credits: number;
-    /**
-     * Serial Number
-     */
-    serial_number: string;
-    /**
-     * Sub Account Id
-     */
-    sub_account_id: number;
-    /**
-     * Sub Account Name
-     */
-    sub_account_name: string;
-    /**
-     * Vintage
-     */
-    vintage: string;
-    /**
-     * Project Id
-     */
-    project_id: number;
-    /**
-     * Project Name
-     */
-    project_name: string;
-    /**
-     * Project Type
-     */
-    project_type: string;
-};
-
-/**
  * DestAssetItem
  */
 export type DestAssetItem = {
@@ -355,13 +317,13 @@ export type RecipientCreatedResponse = {
 };
 
 /**
- * RecipientFields
+ * RecipientFieldsPatch
  */
-export type RecipientFields = {
+export type RecipientFieldsPatch = {
     /**
      * the recipient's email address
      */
-    email: string;
+    email?: string;
     /**
      * the recipient's name
      */
@@ -838,120 +800,6 @@ export type VcsProjectSummary = {
     category: string;
 };
 
-/**
- * VerraInventoryResponse
- */
-export type VerraInventoryResponse = {
-    /**
-     * Total Inventory Credits
-     */
-    total_inventory_credits: number;
-    /**
-     * Credit Batches
-     */
-    credit_batches: Array<CreditBatch>;
-};
-
-/**
- * VerraRetirementItem
- */
-export type VerraRetirementItem = {
-    /**
-     * Issuance Date
-     */
-    issuance_date: string;
-    /**
-     * Instrument Type
-     */
-    instrument_type: string;
-    /**
-     * Vintage Start
-     */
-    vintage_start: string;
-    /**
-     * Vintage End
-     */
-    vintage_end: string;
-    /**
-     * Total Vintage Quantity
-     */
-    total_vintage_quantity: number;
-    /**
-     * Vcs Id
-     */
-    vcs_id: string;
-    /**
-     * Vcs Name
-     */
-    vcs_name: string;
-    /**
-     * Vcs Category
-     */
-    vcs_category: string;
-    /**
-     * Vcs Protocol
-     */
-    vcs_protocol: string;
-    /**
-     * Additional Certifications
-     */
-    additional_certifications: string;
-    /**
-     * Region
-     */
-    region: string;
-    /**
-     * Country
-     */
-    country: string;
-    /**
-     * Vcu Amount
-     */
-    vcu_amount: number;
-    /**
-     * Serial Numbers
-     */
-    serial_numbers: string;
-    /**
-     * Retirement Date
-     */
-    retirement_date: string;
-    /**
-     * Retirement Beneficiary
-     */
-    retirement_beneficiary: string;
-    /**
-     * Retirement Details
-     */
-    retirement_details: string;
-    /**
-     * Certificate Id
-     */
-    certificate_id: string;
-};
-
-/**
- * VerraRetirementsResponse
- */
-export type VerraRetirementsResponse = {
-    /**
-     * Total Count
-     */
-    total_count: number;
-    /**
-     * Count Exceeded
-     */
-    count_exceeded: boolean;
-    /**
-     * Total Amount Retired
-     */
-    total_amount_retired: number;
-    /**
-     * Retirements
-     */
-    retirements: Array<VerraRetirementItem>;
-};
-
 export type GetSep10ChallengeData = {
     body?: never;
     path?: never;
@@ -1066,240 +914,6 @@ export type ValidateSep10ChallengeResponses = {
 };
 
 export type ValidateSep10ChallengeResponse = ValidateSep10ChallengeResponses[keyof ValidateSep10ChallengeResponses];
-
-export type DeprecatedGetCarbonQuoteData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Carbon Amount
-         * requested amount of CARBON
-         */
-        carbon_amount?: number | string;
-    };
-    url: '/carbon-quote';
-};
-
-export type DeprecatedGetCarbonQuoteErrors = {
-    /**
-     * Horizon transaction has failed or is malformed
-     */
-    400: UpstreamErrorResponse;
-    /**
-     * Data requested from Horizon is before recorded history
-     */
-    410: UpstreamErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Horizon's historical database is too stale
-     */
-    503: UpstreamErrorResponse;
-    /**
-     * Horizon could not confirm transaction inclusion (check network conditions)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedGetCarbonQuoteError = DeprecatedGetCarbonQuoteErrors[keyof DeprecatedGetCarbonQuoteErrors];
-
-export type DeprecatedGetCarbonQuoteResponses = {
-    /**
-     * Successful Response
-     */
-    200: CarbonQuoteResponse;
-};
-
-export type DeprecatedGetCarbonQuoteResponse = DeprecatedGetCarbonQuoteResponses[keyof DeprecatedGetCarbonQuoteResponses];
-
-export type DeprecatedGetUsdQuoteData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Usd Amount
-         * requested amount of USD
-         */
-        usd_amount?: number | string;
-    };
-    url: '/usd-quote';
-};
-
-export type DeprecatedGetUsdQuoteErrors = {
-    /**
-     * Horizon transaction has failed or is malformed
-     */
-    400: UpstreamErrorResponse;
-    /**
-     * Data requested from Horizon is before recorded history
-     */
-    410: UpstreamErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Horizon's historical database is too stale
-     */
-    503: UpstreamErrorResponse;
-    /**
-     * Horizon could not confirm transaction inclusion (check network conditions)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedGetUsdQuoteError = DeprecatedGetUsdQuoteErrors[keyof DeprecatedGetUsdQuoteErrors];
-
-export type DeprecatedGetUsdQuoteResponses = {
-    /**
-     * Successful Response
-     */
-    200: UsdQuoteResponse;
-};
-
-export type DeprecatedGetUsdQuoteResponse = DeprecatedGetUsdQuoteResponses[keyof DeprecatedGetUsdQuoteResponses];
-
-export type DeprecatedBuildSinkCarbonXdrData = {
-    body?: never;
-    path?: never;
-    query: {
-        /**
-         * Funder
-         * public key of the account that pays for the transaction
-         */
-        funder: string;
-        /**
-         * Recipient
-         * public key of the account that will receive CarbonSINK (default: funder)
-         */
-        recipient?: string | null;
-        /**
-         * Carbon Amount
-         * the amount of CARBON to sink
-         */
-        carbon_amount?: number | string;
-        /**
-         * Payment Asset
-         * the preferred asset to pay with when the funder does not have a sufficient CARBON balance
-         */
-        payment_asset?: PaymentAsset | null;
-        /**
-         * Vcs Project Id
-         * carbon project from which credits will be retired
-         */
-        vcs_project_id?: VcsProject | null;
-        /**
-         * Memo Type
-         * the kind of memo that will be attached to the transaction
-         */
-        memo_type?: MemoType | null;
-        /**
-         * Memo Value
-         * description of the reason for offsetting
-         */
-        memo_value?: string | null;
-        /**
-         * Email
-         * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
-         * @deprecated
-         */
-        email?: string | null;
-    };
-    url: '/sink-carbon/xdr';
-};
-
-export type DeprecatedBuildSinkCarbonXdrErrors = {
-    /**
-     * No payment path was found for this Stellar account
-     */
-    400: NotFoundErrorResponse;
-    /**
-     * Stellar account was not found on the Public Global Stellar Network ; September 2015
-     */
-    404: NotFoundErrorResponse;
-    /**
-     * Data requested from Horizon is before recorded history
-     */
-    410: UpstreamErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Horizon's historical database is too stale
-     */
-    503: UpstreamErrorResponse;
-    /**
-     * Horizon could not confirm transaction inclusion (check network conditions)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedBuildSinkCarbonXdrError = DeprecatedBuildSinkCarbonXdrErrors[keyof DeprecatedBuildSinkCarbonXdrErrors];
-
-export type DeprecatedBuildSinkCarbonXdrResponses = {
-    /**
-     * Successful Response
-     */
-    200: SinkingResponse;
-};
-
-export type DeprecatedBuildSinkCarbonXdrResponse = DeprecatedBuildSinkCarbonXdrResponses[keyof DeprecatedBuildSinkCarbonXdrResponses];
-
-export type DeprecatedGetCarbonStatsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/stats';
-};
-
-export type DeprecatedGetCarbonStatsErrors = {
-    /**
-     * Horizon transaction has failed or is malformed
-     */
-    400: UpstreamErrorResponse;
-    /**
-     * Data requested from Horizon is before recorded history
-     */
-    410: UpstreamErrorResponse;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Horizon's historical database is too stale
-     */
-    503: UpstreamErrorResponse;
-    /**
-     * Horizon could not confirm transaction inclusion (check network conditions)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedGetCarbonStatsError = DeprecatedGetCarbonStatsErrors[keyof DeprecatedGetCarbonStatsErrors];
-
-export type DeprecatedGetCarbonStatsResponses = {
-    /**
-     * Successful Response
-     */
-    200: AssetStats;
-};
-
-export type DeprecatedGetCarbonStatsResponse = DeprecatedGetCarbonStatsResponses[keyof DeprecatedGetCarbonStatsResponses];
 
 export type GetCarbonQuoteData = {
     body?: never;
@@ -1442,12 +1056,6 @@ export type BuildSinkCarbonXdrData = {
          * description of the reason for offsetting
          */
         memo_value?: string | null;
-        /**
-         * Email
-         * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
-         * @deprecated
-         */
-        email?: string | null;
     };
     url: '/carbon/sink-carbon/xdr';
 };
@@ -1818,7 +1426,7 @@ export type GetRecipientResponses = {
 export type GetRecipientResponse = GetRecipientResponses[keyof GetRecipientResponses];
 
 export type UpdateRecipientData = {
-    body: RecipientFields;
+    body: RecipientFieldsPatch;
     path: {
         /**
          * Recipient Address
@@ -1873,14 +1481,7 @@ export type RequestCertificateData = {
          */
         recipient_address: string;
     };
-    query: {
-        /**
-         * Email
-         * email address that will receive the Verra certificate (also supports `Your Name <account@domain.xyz>` format)
-         * @deprecated
-         */
-        email: string;
-    };
+    query?: never;
     url: '/recipients/{recipient_address}/request-certificate';
 };
 
@@ -1893,6 +1494,10 @@ export type RequestCertificateErrors = {
      * Authorization header is missing or malformed.
      */
     403: Sep10ErrorResponse;
+    /**
+     * Recipient was not found in our database
+     */
+    404: unknown;
     /**
      * Validation Error
      */
@@ -2220,91 +1825,6 @@ export type GetSinkTxItemResponses = {
 };
 
 export type GetSinkTxItemResponse = GetSinkTxItemResponses[keyof GetSinkTxItemResponses];
-
-export type DeprecatedListRetirementsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * For Address
-         * Optionally filter the retirements list by Stellar address.
-         *
-         * This filter does not affect any of the aggregate statistics. Any filtered
-         * statistics need to be computed by the client making the request.
-         *
-         */
-        for_address?: string | null;
-        /**
-         * Date Gte
-         * Only list retirements done on or after this date.
-         */
-        date_gte?: string | null;
-    };
-    url: '/registry/retirements';
-};
-
-export type DeprecatedListRetirementsErrors = {
-    /**
-     * The request you sent was invalid in some way
-     */
-    400: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Timeout querying the Verra Registry (8 seconds)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedListRetirementsError = DeprecatedListRetirementsErrors[keyof DeprecatedListRetirementsErrors];
-
-export type DeprecatedListRetirementsResponses = {
-    /**
-     * Successful Response
-     */
-    200: VerraRetirementsResponse;
-};
-
-export type DeprecatedListRetirementsResponse = DeprecatedListRetirementsResponses[keyof DeprecatedListRetirementsResponses];
-
-export type DeprecatedListInventoryData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/registry/inventory';
-};
-
-export type DeprecatedListInventoryErrors = {
-    /**
-     * The request you sent was invalid in some way
-     */
-    400: unknown;
-    /**
-     * An unhandled error occurred on the server
-     */
-    500: unknown;
-    /**
-     * Timeout querying the Verra Registry (5 seconds)
-     */
-    504: UpstreamErrorResponse;
-};
-
-export type DeprecatedListInventoryError = DeprecatedListInventoryErrors[keyof DeprecatedListInventoryErrors];
-
-export type DeprecatedListInventoryResponses = {
-    /**
-     * Successful Response
-     */
-    200: VerraInventoryResponse;
-};
-
-export type DeprecatedListInventoryResponse = DeprecatedListInventoryResponses[keyof DeprecatedListInventoryResponses];
 
 export type ClientOptions = {
     baseUrl: 'https://api.stellarcarbon.io' | (string & {});

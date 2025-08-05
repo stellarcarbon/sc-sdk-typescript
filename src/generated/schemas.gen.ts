@@ -100,46 +100,6 @@ export const CreateRecipientPayloadSchema = {
     title: 'CreateRecipientPayload'
 } as const;
 
-export const CreditBatchSchema = {
-    properties: {
-        quantity_of_credits: {
-            type: 'integer',
-            title: 'Quantity Of Credits'
-        },
-        serial_number: {
-            type: 'string',
-            title: 'Serial Number'
-        },
-        sub_account_id: {
-            type: 'integer',
-            title: 'Sub Account Id'
-        },
-        sub_account_name: {
-            type: 'string',
-            title: 'Sub Account Name'
-        },
-        vintage: {
-            type: 'string',
-            title: 'Vintage'
-        },
-        project_id: {
-            type: 'integer',
-            title: 'Project Id'
-        },
-        project_name: {
-            type: 'string',
-            title: 'Project Name'
-        },
-        project_type: {
-            type: 'string',
-            title: 'Project Type'
-        }
-    },
-    type: 'object',
-    required: ['quantity_of_credits', 'serial_number', 'sub_account_id', 'sub_account_name', 'vintage', 'project_id', 'project_name', 'project_type'],
-    title: 'CreditBatch'
-} as const;
-
 export const DestAssetItemSchema = {
     properties: {
         code: {
@@ -476,7 +436,7 @@ export const RecipientCreatedResponseSchema = {
     title: 'RecipientCreatedResponse'
 } as const;
 
-export const RecipientFieldsSchema = {
+export const RecipientFieldsPatchSchema = {
     properties: {
         email: {
             type: 'string',
@@ -497,8 +457,7 @@ export const RecipientFieldsSchema = {
         }
     },
     type: 'object',
-    required: ['email'],
-    title: 'RecipientFields'
+    title: 'RecipientFieldsPatch'
 } as const;
 
 export const RequestCertificateResponseSchema = {
@@ -1071,130 +1030,4 @@ export const VcsProjectSummarySchema = {
     type: 'object',
     required: ['id', 'registry_url', 'name', 'category'],
     title: 'VcsProjectSummary'
-} as const;
-
-export const VerraInventoryResponseSchema = {
-    properties: {
-        total_inventory_credits: {
-            type: 'integer',
-            title: 'Total Inventory Credits'
-        },
-        credit_batches: {
-            items: {
-                '$ref': '#/components/schemas/CreditBatch'
-            },
-            type: 'array',
-            title: 'Credit Batches'
-        }
-    },
-    type: 'object',
-    required: ['total_inventory_credits', 'credit_batches'],
-    title: 'VerraInventoryResponse'
-} as const;
-
-export const VerraRetirementItemSchema = {
-    properties: {
-        issuance_date: {
-            type: 'string',
-            title: 'Issuance Date'
-        },
-        instrument_type: {
-            type: 'string',
-            title: 'Instrument Type'
-        },
-        vintage_start: {
-            type: 'string',
-            title: 'Vintage Start'
-        },
-        vintage_end: {
-            type: 'string',
-            title: 'Vintage End'
-        },
-        total_vintage_quantity: {
-            type: 'integer',
-            title: 'Total Vintage Quantity'
-        },
-        vcs_id: {
-            type: 'string',
-            title: 'Vcs Id'
-        },
-        vcs_name: {
-            type: 'string',
-            title: 'Vcs Name'
-        },
-        vcs_category: {
-            type: 'string',
-            title: 'Vcs Category'
-        },
-        vcs_protocol: {
-            type: 'string',
-            title: 'Vcs Protocol'
-        },
-        additional_certifications: {
-            type: 'string',
-            title: 'Additional Certifications'
-        },
-        region: {
-            type: 'string',
-            title: 'Region'
-        },
-        country: {
-            type: 'string',
-            title: 'Country'
-        },
-        vcu_amount: {
-            type: 'integer',
-            title: 'Vcu Amount'
-        },
-        serial_numbers: {
-            type: 'string',
-            title: 'Serial Numbers'
-        },
-        retirement_date: {
-            type: 'string',
-            title: 'Retirement Date'
-        },
-        retirement_beneficiary: {
-            type: 'string',
-            title: 'Retirement Beneficiary'
-        },
-        retirement_details: {
-            type: 'string',
-            title: 'Retirement Details'
-        },
-        certificate_id: {
-            type: 'string',
-            title: 'Certificate Id'
-        }
-    },
-    type: 'object',
-    required: ['issuance_date', 'instrument_type', 'vintage_start', 'vintage_end', 'total_vintage_quantity', 'vcs_id', 'vcs_name', 'vcs_category', 'vcs_protocol', 'additional_certifications', 'region', 'country', 'vcu_amount', 'serial_numbers', 'retirement_date', 'retirement_beneficiary', 'retirement_details', 'certificate_id'],
-    title: 'VerraRetirementItem'
-} as const;
-
-export const VerraRetirementsResponseSchema = {
-    properties: {
-        total_count: {
-            type: 'integer',
-            title: 'Total Count'
-        },
-        count_exceeded: {
-            type: 'boolean',
-            title: 'Count Exceeded'
-        },
-        total_amount_retired: {
-            type: 'integer',
-            title: 'Total Amount Retired'
-        },
-        retirements: {
-            items: {
-                '$ref': '#/components/schemas/VerraRetirementItem'
-            },
-            type: 'array',
-            title: 'Retirements'
-        }
-    },
-    type: 'object',
-    required: ['total_count', 'count_exceeded', 'total_amount_retired', 'retirements'],
-    title: 'VerraRetirementsResponse'
 } as const;
