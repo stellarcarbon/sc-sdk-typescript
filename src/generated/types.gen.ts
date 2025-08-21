@@ -636,11 +636,6 @@ export type SinkingResponse = {
      * Tx Xdr
      */
     tx_xdr: string;
-    /**
-     * Txrep
-     * @deprecated
-     */
-    txrep?: string;
 };
 
 /**

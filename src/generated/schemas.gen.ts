@@ -817,12 +817,6 @@ export const SinkingResponseSchema = {
         tx_xdr: {
             type: 'string',
             title: 'Tx Xdr'
-        },
-        txrep: {
-            type: 'string',
-            title: 'Txrep',
-            default: '',
-            deprecated: true
         }
     },
     type: 'object',
