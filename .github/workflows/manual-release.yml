@@ -41,9 +41,7 @@ jobs:
         id: get_version
         run: echo "::set-output name=VER::$(node -p "require('./package.json').version")"
 
-      # If any new updates to the api, commit
       - name: Commit release bump
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git config user.name "github-actions[bot]"
@@ -67,12 +65,12 @@ jobs:
 
       - name: Publish to npm (or dry run)
         run: |
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            echo "=== DRY RUN ==="
-            npm publish --dry-run --access public
-          else
+          if [ "${{ github.event.inputs.dry_run }}" = "false" ]; then
             echo "=== REAL PUBLISH ==="
             npm publish --access public
+          else
+            echo "=== DRY RUN ==="
+            npm publish --dry-run --access public
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
