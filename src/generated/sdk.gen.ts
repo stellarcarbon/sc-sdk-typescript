@@ -20,6 +20,30 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 /**
  * Request a SEP-10 challenge transaction to prove ownership of an account.
+ * Build and return a SEP-10 challenge transaction (XDR) that a client can sign to prove control
+ * of a Stellar account.
+ *
+ * The endpoint implements the SEP-10 "web authentication" challenge generation:
+ * - Validates input (e.g. prevents providing a memo together with a muxed account).
+ * - Calls internal.generate_challenge() to create a challenge TransactionEnvelope signed by the
+ * server's API signer.
+ * - Returns the base64 XDR and the network passphrase the client must use when signing.
+ *
+ * Parameters:
+ * - account: Stellar account that will sign the challenge (G... or M...).
+ * - memo: Optional numeric memo to be associated with the authenticated subject. If provided,
+ * the final JWT 'sub' claim will be "G...:memo". Do not provide when using an M-address.
+ * - home_domain: The anchor's home domain (used when building the challenge).
+ * - client_domain: Optional client domain; when present the challenge includes a ManageData op
+ * for the client domain per SEP-10.
+ *
+ * Returns:
+ * - transaction: base64-encoded TransactionEnvelope XDR that the client must sign.
+ * - network_passphrase: the Stellar network passphrase to be used when signing the transaction.
+ *
+ * Errors:
+ * - 422: invalid combination of parameters (e.g. memo with muxed account).
+ * - 400: Stellar SDK error while building the challenge.
  */
 export const getSep10Challenge = <ThrowOnError extends boolean = false>(options: Options<GetSep10ChallengeData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetSep10ChallengeResponses, GetSep10ChallengeErrors, ThrowOnError>({
@@ -30,6 +54,31 @@ export const getSep10Challenge = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Submit the signed SEP-10 challenge transaction to receive a JWT.
+ * Validate a signed SEP-10 challenge and issue a JSON Web Token (JWT) representing the authenticated session.
+ *
+ * The request accepts the signed challenge transaction either as:
+ * - a query parameter named `transaction` containing the base64 XDR, or
+ * - a JSON body with a top-level `transaction` field.
+ *
+ * Validation performed:
+ * - The signed challenge XDR is parsed and validated according to SEP-10 rules (read_challenge_transaction).
+ * - If the client's Stellar account exists on-chain, signatures are checked against account signers and
+ * the medium threshold requirement is enforced.
+ * - If the account does not exist, the client's master key signature is sufficient.
+ * - On successful validation a JWT is generated with claims per SEP-10:
+ * iss (web auth URL), sub (authenticated account or muxed address, possibly with ":memo"),
+ * iat/exp (based on challenge timebounds), and jti (challenge hash).
+ *
+ * Parameters:
+ * - transaction: Signed challenge transaction XDR (base64). Can be supplied as query param.
+ * - challenge: Optional JSON body {"transaction": "..."} used by clients that POST JSON.
+ *
+ * Returns:
+ * - token: A HS256-signed JWT that the client may use as a Bearer token for authenticated requests.
+ *
+ * Errors:
+ * - 422: missing transaction.
+ * - 400: invalid challenge XDR or failed signature/threshold checks.
  */
 export const validateSep10Challenge = <ThrowOnError extends boolean = false>(options?: Options<ValidateSep10ChallengeData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<ValidateSep10ChallengeResponses, ValidateSep10ChallengeErrors, ThrowOnError>({
@@ -61,6 +110,13 @@ export const getCarbonQuote = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * Get the estimated amount of CARBON that can be purchased for the given price.
+ * Request the estimated amount of CARBON that can be purchased for a given USD amount.
+ *
+ * The response includes the estimated total CARBON that can be obtained for the provided USD,
+ * taking current pricing into account.
+ *
+ * This estimate is non-binding and does not take into account the amount of CARBON that we are
+ * currently able to provide from our pool (inventory or distribution constraints).
  */
 export const getUsdQuote = <ThrowOnError extends boolean = false>(options?: Options<GetUsdQuoteData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetUsdQuoteResponses, GetUsdQuoteErrors, ThrowOnError>({
@@ -89,6 +145,15 @@ export const buildSinkCarbonXdr = <ThrowOnError extends boolean = false>(options
 
 /**
  * Get aggregated stats of the CARBON and CarbonSINK assets.
+ * Return aggregated CARBON and CarbonSINK asset statistics.
+ *
+ * Definitions:
+ * - carbon_sunk: total CARBON that users have sunk and swapped for CarbonSINK.
+ * - carbon_retired: total CARBON for which VCUs have been permanently retired.
+ * - carbon_pending: the difference between carbon_sunk and carbon_retired — CARBON
+ * that has been sunk and is awaiting retirement.
+ * - carbon_stored: total amount of CARBON minted; the sum of CARBON and CarbonSINK
+ * in circulation.
  */
 export const getCarbonStats = <ThrowOnError extends boolean = false>(options?: Options<GetCarbonStatsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetCarbonStatsResponses, GetCarbonStatsErrors, ThrowOnError>({
@@ -99,6 +164,12 @@ export const getCarbonStats = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * List sinking transactions for the given recipient account.
+ * Return paginated sinking (CARBON -> CarbonSINK) transactions for a recipient.
+ *
+ * Optional filtering by finalized (retirement completed) is supported.
+ *
+ * Returns:
+ * - SinkTxListResponse containing transactions and paging information.
  */
 export const getSinkTxsForRecipient = <ThrowOnError extends boolean = false>(options: Options<GetSinkTxsForRecipientData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetSinkTxsForRecipientResponses, GetSinkTxsForRecipientErrors, ThrowOnError>({
@@ -109,6 +180,12 @@ export const getSinkTxsForRecipient = <ThrowOnError extends boolean = false>(opt
 
 /**
  * List finalized retirements for the given beneficiary account.
+ * Return paginated finalized retirements (certificates) for a beneficiary.
+ *
+ * Optional filtering by impact project is supported.
+ *
+ * Returns:
+ * - RetirementListResponse containing retirements and paging information.
  */
 export const getRetirementsForBeneficiary = <ThrowOnError extends boolean = false>(options: Options<GetRetirementsForBeneficiaryData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetRetirementsForBeneficiaryResponses, GetRetirementsForBeneficiaryErrors, ThrowOnError>({
@@ -119,6 +196,10 @@ export const getRetirementsForBeneficiary = <ThrowOnError extends boolean = fals
 
 /**
  * Get filtered stats for the given recipient account.
+ * Return aggregated CARBON statistics for a single recipient.
+ *
+ * Returns:
+ * - CarbonStats with carbon_sunk, carbon_retired and carbon_pending filtered to the recipient.
  */
 export const getRecipientStats = <ThrowOnError extends boolean = false>(options: Options<GetRecipientStatsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetRecipientStatsResponses, GetRecipientStatsErrors, ThrowOnError>({
@@ -129,6 +210,10 @@ export const getRecipientStats = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Create a new recipient in our database.
+ * Create a recipient record. Requires SEP-10 authorization for the provided address.
+ *
+ * Returns:
+ * - RecipientCreatedResponse with the created recipient.
  */
 export const createRecipient = <ThrowOnError extends boolean = false>(options: Options<CreateRecipientData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateRecipientResponses, CreateRecipientErrors, ThrowOnError>({
@@ -149,6 +234,10 @@ export const createRecipient = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Delete a recipient from our database.
+ * Delete a recipient record.
+ *
+ * Returns:
+ * - 204 No Content on success.
  */
 export const deleteRecipient = <ThrowOnError extends boolean = false>(options: Options<DeleteRecipientData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).delete<DeleteRecipientResponses, DeleteRecipientErrors, ThrowOnError>({
@@ -165,6 +254,10 @@ export const deleteRecipient = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Fetch a single recipient from our database.
+ * Retrieve a recipient record.
+ *
+ * Returns:
+ * - Recipient record as stored in the database.
  */
 export const getRecipient = <ThrowOnError extends boolean = false>(options: Options<GetRecipientData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetRecipientResponses, GetRecipientErrors, ThrowOnError>({
@@ -181,6 +274,10 @@ export const getRecipient = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * Update any of a recipient's fields; modified_at is automatically set.
+ * Update mutable fields of a recipient. `modified_at` is automatically set.
+ *
+ * Returns:
+ * - Updated Recipient record.
  */
 export const updateRecipient = <ThrowOnError extends boolean = false>(options: Options<UpdateRecipientData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).patch<UpdateRecipientResponses, UpdateRecipientErrors, ThrowOnError>({
@@ -201,6 +298,15 @@ export const updateRecipient = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Request the retirement of the whole credits in this account's pending balance.
+ * Request retirement of whole VCUs from the recipient's pending balance.
+ *
+ * Enqueues an asynchronous retirement task and sends notification emails.
+ *
+ * Returns:
+ * - RequestCertificateResponse with account, certificate_amount and the remaining fractional pending balance.
+ *
+ * Errors:
+ * - 400 if there are no whole credits available to request.
  */
 export const requestCertificate = <ThrowOnError extends boolean = false>(options: Options<RequestCertificateData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<RequestCertificateResponses, RequestCertificateErrors, ThrowOnError>({
@@ -216,7 +322,12 @@ export const requestCertificate = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Estimate the CO2 emissions for a flight between two airports.
+ * Estimate the CO₂ emissions for a flight between two airports.
+ * Estimate per-passenger CO₂ emissions for a flight between two airports.
+ *
+ * Returns the airport names, the great-circle distance in kilometers, and an estimated
+ * CO₂ emission per passenger. The estimate uses an internal aircraft model and
+ * applies seat- and cabin-class adjustments; it should be treated as an approximation.
  */
 export const getFlightEstimate = <ThrowOnError extends boolean = false>(options: Options<GetFlightEstimateData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetFlightEstimateResponses, GetFlightEstimateErrors, ThrowOnError>({
@@ -226,7 +337,8 @@ export const getFlightEstimate = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * List minted blocks (current and past inventory).
+ * View Stellarcarbon's current or historical inventory of eco-credits.
+ * Retrieve a summary of minted blocks and their remaining credits.
  */
 export const getMintedBlockList = <ThrowOnError extends boolean = false>(options?: Options<GetMintedBlockListData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetMintedBlockListResponses, GetMintedBlockListErrors, ThrowOnError>({
@@ -236,7 +348,13 @@ export const getMintedBlockList = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * List finalized retirements.
+ * View finalized retirements and the attributes of the retired credits.
+ * Return a paginated list of finalized retirements along with a total retired amount.
+ *
+ * Each retirement item includes certificate metadata, beneficiary information, associated
+ * impact project and the retired instrument attributes. Filters for beneficiary, date range,
+ * and project may be applied to narrow results. This endpoint is useful for browsing historical
+ * retirement activity and retrieving aggregate totals.
  */
 export const getRetirementList = <ThrowOnError extends boolean = false>(options?: Options<GetRetirementListData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetRetirementListResponses, GetRetirementListErrors, ThrowOnError>({
@@ -247,6 +365,12 @@ export const getRetirementList = <ThrowOnError extends boolean = false>(options?
 
 /**
  * Fetch a single retirement and its instrument details.
+ * Fetch detailed information for a single retirement certificate.
+ *
+ * The response includes the retirement's certificate metadata, the retired instrument's
+ * attributes, the blocks from which credits were retired, and a list of sink statuses
+ * associated with the retirement. If the requested certificate ID does not exist a 404
+ * error is returned.
  */
 export const getRetirementItem = <ThrowOnError extends boolean = false>(options: Options<GetRetirementItemData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetRetirementItemResponses, GetRetirementItemErrors, ThrowOnError>({
@@ -256,7 +380,12 @@ export const getRetirementItem = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * List sinking transactions and their retirement status.
+ * View sinking transactions and their retirement status.
+ * Return a paginated list of sinking transactions together with aggregate totals.
+ *
+ * Each transaction record includes source and destination asset details, funder and recipient
+ * information, memo data, retirement summaries and a flag indicating whether retirement has
+ * been finalized. The response also includes totals for sunk, retired and pending CARBON.
  */
 export const getSinkTxList = <ThrowOnError extends boolean = false>(options?: Options<GetSinkTxListData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetSinkTxListResponses, GetSinkTxListErrors, ThrowOnError>({
@@ -267,6 +396,12 @@ export const getSinkTxList = <ThrowOnError extends boolean = false>(options?: Op
 
 /**
  * Fetch a single sink transaction and its retirement status.
+ * Fetch a single sinking transaction and its retirement status.
+ *
+ * The returned record is a transformed view of the stored transaction that includes
+ * nested source/destination asset objects, memo details, a list of retirement summaries,
+ * and a boolean indicating whether retirement has been finalized. A 404 error is returned
+ * if the transaction is not present in the database.
  */
 export const getSinkTxItem = <ThrowOnError extends boolean = false>(options: Options<GetSinkTxItemData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetSinkTxItemResponses, GetSinkTxItemErrors, ThrowOnError>({

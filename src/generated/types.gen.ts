@@ -69,14 +69,17 @@ export type CarbonStats = {
 export type CreateRecipientPayload = {
     /**
      * the address that is used to identify this recipient
+     * Stellar account address (G... or M...) used to identify the recipient.
      */
     address: string;
     /**
      * the recipient's email address
+     * Contact email for the recipient, provided to Verra upon retirement.
      */
     email: string;
     /**
      * the recipient's name
+     * Optional display name for the recipient.
      */
     name?: string | null;
 };
@@ -104,19 +107,23 @@ export type DestAssetItem = {
  */
 export type FlightEstimateResponse = {
     /**
-     * Departure Name
+     * departure airport name
+     * Full name of the departure airport (from the IATA code).
      */
     departure_name: string;
     /**
-     * Destination Name
+     * destination airport name
+     * Full name of the destination airport (from the IATA code).
      */
     destination_name: string;
     /**
-     * Distance Km
+     * distance (km)
+     * Great-circle distance flown between the two airports in kilometers.
      */
     distance_km: string;
     /**
-     * Co2 Tonnes
+     * estimated tCO₂
+     * Estimated CO₂ emissions per passenger for the trip in metric tons.
      */
     co2_tonnes: string;
 };
@@ -289,14 +296,17 @@ export type PaymentAsset = 'XLM' | 'USDC' | 'any';
 export type Recipient = {
     /**
      * the time at which this recipient was last updated
+     * UTC timestamp when this recipient was last modified.
      */
     modified_at: string;
     /**
      * the recipient's email address
+     * Contact email for the recipient, provided to Verra upon retirement.
      */
     email: string;
     /**
      * the recipient's name
+     * Optional display name for the recipient.
      */
     name?: string | null;
 };
@@ -307,12 +317,18 @@ export type Recipient = {
 export type RecipientCreatedResponse = {
     /**
      * the address that is used to identify this recipient
+     * Stellar account address (G... or M...) used to identify the recipient.
      */
     address: string;
     /**
-     * Message
+     * creation message
+     * Human-friendly message about the created recipient.
      */
     message: string;
+    /**
+     * created recipient
+     * The created recipient record.
+     */
     recipient: Recipient;
 };
 
@@ -322,10 +338,12 @@ export type RecipientCreatedResponse = {
 export type RecipientFieldsPatch = {
     /**
      * the recipient's email address
+     * Contact email for the recipient, provided to Verra upon retirement.
      */
     email?: string;
     /**
      * the recipient's name
+     * Optional display name for the recipient.
      */
     name?: string | null;
 };
@@ -335,15 +353,18 @@ export type RecipientFieldsPatch = {
  */
 export type RequestCertificateResponse = {
     /**
-     * Account
+     * requesting account
+     * The account that requested the certificate.
      */
     account: string;
     /**
-     * Certificate Amount
+     * certificate amount
+     * Integer number of credits requested for retirement.
      */
     certificate_amount: number;
     /**
-     * Pending Balance After Retirement
+     * pending balance after retirement
+     * Remaining fractional pending balance after whole VCUs are retired.
      */
     pending_balance_after_retirement: string;
 };
@@ -482,11 +503,13 @@ export type RetirementSummary = {
  */
 export type Sep10ChallengeResponse = {
     /**
-     * Transaction
+     * challenge transaction
+     * Base64-encoded TransactionEnvelope XDR that the client must sign.
      */
     transaction: string;
     /**
-     * Network Passphrase
+     * network passphrase
+     * The Stellar network passphrase to be used when signing the challenge.
      */
     network_passphrase: string;
 };
@@ -506,7 +529,8 @@ export type Sep10ErrorResponse = {
  */
 export type Sep10TokenResponse = {
     /**
-     * Token
+     * authentication token
+     * HS256-signed JWT issued after successful SEP-10 challenge validation.
      */
     token: string;
 };
@@ -543,9 +567,9 @@ export type SinkTxItem = {
     vcs_project_id: number;
     memo: MemoItem;
     /**
-     * Paging Token
+     * Toid
      */
-    paging_token: string;
+    toid: string;
     /**
      * Retirement Finalized
      */
@@ -707,7 +731,8 @@ export type UpstreamErrorResponse = {
  */
 export type ValidateChallengeBody = {
     /**
-     * Transaction
+     * signed challenge transaction
+     * The signed challenge TransactionEnvelope XDR (base64).
      */
     transaction: string;
 };
@@ -801,18 +826,22 @@ export type GetSep10ChallengeData = {
     query: {
         /**
          * Account
+         * Stellar account public key to prove ownership of (G... or M...)
          */
         account: string;
         /**
          * Memo
+         * Optional 64-bit integer memo to include in the 'sub' value of the resulting JWT. Must not be provided when `account` is a muxed address (M...).
          */
         memo?: number | null;
         /**
          * Home Domain
+         * Stellarcarbon's home domain (defaults to server configuration).
          */
         home_domain?: string;
         /**
          * Client Domain
+         * Optional client/wallet domain to include in the challenge's ManageData op.
          */
         client_domain?: string | null;
     };
@@ -860,12 +889,14 @@ export type GetSep10ChallengeResponse = GetSep10ChallengeResponses[keyof GetSep1
 export type ValidateSep10ChallengeData = {
     /**
      * Challenge
+     * Optional JSON body containing the transaction XDR. Used by clients that POST JSON.
      */
     body?: ValidateChallengeBody | null;
     path?: never;
     query?: {
         /**
          * Transaction
+         * The signed challenge TransactionEnvelope XDR (base64). Can be supplied as a query parameter or in the request JSON body as {"transaction": "..."}.
          */
         transaction?: string | null;
     };
@@ -1143,25 +1174,29 @@ export type GetSinkTxsForRecipientData = {
     path: {
         /**
          * Recipient Address
-         * the address by which sinking transactions are filtered
+         * Only show transactions for the given recipient address.
          */
         recipient_address: string;
     };
     query?: {
         /**
          * Finalized
+         * Filter by retirement status.
          */
         finalized?: boolean | null;
         /**
          * Cursor
+         * Specify which cursor the page starts with
          */
         cursor?: number | string | null;
         /**
          * Limit
+         * The maximum number of items per page
          */
         limit?: number | null;
         /**
          * Order
+         * Use ascending or descending order for pagination
          */
         order?: 'asc' | 'desc';
     };
@@ -1199,25 +1234,29 @@ export type GetRetirementsForBeneficiaryData = {
     path: {
         /**
          * Beneficiary Address
-         * the address which is the beneficiary of the retirements
+         * Only show retirements for the given beneficiary address.
          */
         beneficiary_address: string;
     };
     query?: {
         /**
          * Project
+         * Filter by impact project.
          */
         project?: number | null;
         /**
          * Cursor
+         * Specify which cursor the page starts with
          */
         cursor?: number | string | null;
         /**
          * Limit
+         * The maximum number of items per page
          */
         limit?: number | null;
         /**
          * Order
+         * Use ascending or descending order for pagination
          */
         order?: 'asc' | 'desc';
     };
@@ -1520,15 +1559,21 @@ export type GetFlightEstimateData = {
     query: {
         /**
          * Departure
+         * IATA code of the departure airport
          */
         departure: string;
         /**
          * Destination
+         * IATA code of the destination airport
          */
         destination: string;
+        /**
+         * Cabin class for the passenger
+         */
         cabin_class?: CabinClass;
         /**
          * Trip Type
+         * One-way or round-trip
          */
         trip_type?: 'one-way' | 'round-trip';
     };
@@ -1571,10 +1616,12 @@ export type GetMintedBlockListData = {
     query?: {
         /**
          * Omit Empty
+         * Don't show empty minted blocks.
          */
         omit_empty?: boolean;
         /**
          * Until Date
+         * Reconstruct the inventory on the given date.
          */
         until_date?: string | null;
     };
@@ -1613,30 +1660,37 @@ export type GetRetirementListData = {
     query?: {
         /**
          * For Beneficiary
+         * Only show retirements for the given beneficiary address.
          */
         for_beneficiary?: string | null;
         /**
          * From Date
+         * Filter retirements that happened on or after the given date.
          */
         from_date?: string | null;
         /**
          * Before Date
+         * Filter retirements that happened before the given date.
          */
         before_date?: string | null;
         /**
          * Project
+         * Filter by impact project.
          */
         project?: number | null;
         /**
          * Cursor
+         * Specify which cursor the page starts with
          */
         cursor?: number | string | null;
         /**
          * Limit
+         * The maximum number of items per page
          */
         limit?: number | null;
         /**
          * Order
+         * Use ascending or descending order for pagination
          */
         order?: 'asc' | 'desc';
     };
@@ -1718,34 +1772,47 @@ export type GetSinkTxListData = {
     query?: {
         /**
          * For Funder
+         * Only show transactions for the given funder address.
          */
         for_funder?: string | null;
         /**
          * For Recipient
+         * Only show transactions for the given recipient address.
          */
         for_recipient?: string | null;
         /**
          * From Date
+         * Filter transactions that happened on or after the given date.
          */
         from_date?: string | null;
         /**
          * Before Date
+         * Filter transactions that happened before the given date.
          */
         before_date?: string | null;
         /**
          * Finalized
+         * Filter by retirement status.
          */
         finalized?: boolean | null;
         /**
+         * Contract Call
+         * Only show transactions done through sorocarbon, or exclude them.
+         */
+        contract_call?: boolean | null;
+        /**
          * Cursor
+         * Specify which cursor the page starts with
          */
         cursor?: number | string | null;
         /**
          * Limit
+         * The maximum number of items per page
          */
         limit?: number | null;
         /**
          * Order
+         * Use ascending or descending order for pagination
          */
         order?: 'asc' | 'desc';
     };

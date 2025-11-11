@@ -4,7 +4,7 @@
         "title": "Stellarcarbon API",
         "summary": "Protect the rainforest with Stellarcarbon. Breathing space, preserved.",
         "description": "This API is ideal for developers and businesses looking to integrate CO₂ compensation into their existing products. It is permissionless: you don't need an API key. We publish an OpenAPI schema which can be used to automatically generate API clients for many programming languages, making your integration easy to set up and maintain.\n\nSee the API in action within our dApp: <https://new.stellarcarbon.io>\n\nThere is an official SDK based on our OpenAPI schema for JS/TS: <https://www.npmjs.com/package/@stellarcarbon/sc-sdk>\n\nThe interactive documentation below is organized into categories. It specifies — for each endpoint — the request and response schemas. Use the \"try it out\" button to unlock the form fields, and confirm with \"execute\" to get an actual response from the API.",
-        "version": "0.21.1"
+        "version": "0.22.0"
     },
     "paths": {
         "/auth/sep-10": {
@@ -13,6 +13,7 @@
                     "auth"
                 ],
                 "summary": "Request a SEP-10 challenge transaction to prove ownership of an account.",
+                "description": "Build and return a SEP-10 challenge transaction (XDR) that a client can sign to prove control\nof a Stellar account.\n\nThe endpoint implements the SEP-10 \"web authentication\" challenge generation:\n- Validates input (e.g. prevents providing a memo together with a muxed account).\n- Calls internal.generate_challenge() to create a challenge TransactionEnvelope signed by the\n  server's API signer.\n- Returns the base64 XDR and the network passphrase the client must use when signing.\n\nParameters:\n- account: Stellar account that will sign the challenge (G... or M...).\n- memo: Optional numeric memo to be associated with the authenticated subject. If provided,\n  the final JWT 'sub' claim will be \"G...:memo\". Do not provide when using an M-address.\n- home_domain: The anchor's home domain (used when building the challenge).\n- client_domain: Optional client domain; when present the challenge includes a ManageData op\n  for the client domain per SEP-10.\n\nReturns:\n- transaction: base64-encoded TransactionEnvelope XDR that the client must sign.\n- network_passphrase: the Stellar network passphrase to be used when signing the transaction.\n\nErrors:\n- 422: invalid combination of parameters (e.g. memo with muxed account).\n- 400: Stellar SDK error while building the challenge.",
                 "operationId": "get_sep10_challenge",
                 "parameters": [
                     {
@@ -21,8 +22,10 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "description": "Stellar account public key to prove ownership of (G... or M...)",
                             "title": "Account"
-                        }
+                        },
+                        "description": "Stellar account public key to prove ownership of (G... or M...)"
                     },
                     {
                         "name": "memo",
@@ -37,8 +40,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Optional 64-bit integer memo to include in the 'sub' value of the resulting JWT. Must not be provided when `account` is a muxed address (M...).",
                             "title": "Memo"
-                        }
+                        },
+                        "description": "Optional 64-bit integer memo to include in the 'sub' value of the resulting JWT. Must not be provided when `account` is a muxed address (M...)."
                     },
                     {
                         "name": "home_domain",
@@ -46,9 +51,11 @@
                         "required": false,
                         "schema": {
                             "type": "string",
+                            "description": "Stellarcarbon's home domain (defaults to server configuration).",
                             "default": "stellarcarbon.io",
                             "title": "Home Domain"
-                        }
+                        },
+                        "description": "Stellarcarbon's home domain (defaults to server configuration)."
                     },
                     {
                         "name": "client_domain",
@@ -63,8 +70,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Optional client/wallet domain to include in the challenge's ManageData op.",
                             "title": "Client Domain"
-                        }
+                        },
+                        "description": "Optional client/wallet domain to include in the challenge's ManageData op."
                     }
                 ],
                 "responses": {
@@ -138,6 +147,7 @@
                     "auth"
                 ],
                 "summary": "Submit the signed SEP-10 challenge transaction to receive a JWT.",
+                "description": "Validate a signed SEP-10 challenge and issue a JSON Web Token (JWT) representing the authenticated session.\n\nThe request accepts the signed challenge transaction either as:\n- a query parameter named `transaction` containing the base64 XDR, or\n- a JSON body with a top-level `transaction` field.\n\nValidation performed:\n- The signed challenge XDR is parsed and validated according to SEP-10 rules (read_challenge_transaction).\n- If the client's Stellar account exists on-chain, signatures are checked against account signers and\n  the medium threshold requirement is enforced.\n- If the account does not exist, the client's master key signature is sufficient.\n- On successful validation a JWT is generated with claims per SEP-10:\n  iss (web auth URL), sub (authenticated account or muxed address, possibly with \":memo\"),\n  iat/exp (based on challenge timebounds), and jti (challenge hash).\n\nParameters:\n- transaction: Signed challenge transaction XDR (base64). Can be supplied as query param.\n- challenge: Optional JSON body {\"transaction\": \"...\"} used by clients that POST JSON.\n\nReturns:\n- token: A HS256-signed JWT that the client may use as a Bearer token for authenticated requests.\n\nErrors:\n- 422: missing transaction.\n- 400: invalid challenge XDR or failed signature/threshold checks.",
                 "operationId": "validate_sep10_challenge",
                 "parameters": [
                     {
@@ -153,8 +163,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "The signed challenge TransactionEnvelope XDR (base64). Can be supplied as a query parameter or in the request JSON body as {\"transaction\": \"...\"}.",
                             "title": "Transaction"
-                        }
+                        },
+                        "description": "The signed challenge TransactionEnvelope XDR (base64). Can be supplied as a query parameter or in the request JSON body as {\"transaction\": \"...\"}."
                     }
                 ],
                 "requestBody": {
@@ -169,6 +181,7 @@
                                         "type": "null"
                                     }
                                 ],
+                                "description": "Optional JSON body containing the transaction XDR. Used by clients that POST JSON.",
                                 "title": "Challenge"
                             }
                         }
@@ -344,6 +357,7 @@
                     "CARBON"
                 ],
                 "summary": "Get the estimated amount of CARBON that can be purchased for the given price.",
+                "description": "Request the estimated amount of CARBON that can be purchased for a given USD amount.\n\nThe response includes the estimated total CARBON that can be obtained for the provided USD,\ntaking current pricing into account.\n\nThis estimate is non-binding and does not take into account the amount of CARBON that we are\ncurrently able to provide from our pool (inventory or distribution constraints).",
                 "operationId": "get_usd_quote",
                 "parameters": [
                     {
@@ -651,6 +665,7 @@
                     "CARBON"
                 ],
                 "summary": "Get aggregated stats of the CARBON and CarbonSINK assets.",
+                "description": "Return aggregated CARBON and CarbonSINK asset statistics.\n\nDefinitions:\n- carbon_sunk: total CARBON that users have sunk and swapped for CarbonSINK.\n- carbon_retired: total CARBON for which VCUs have been permanently retired.\n- carbon_pending: the difference between carbon_sunk and carbon_retired — CARBON\n  that has been sunk and is awaiting retirement.\n- carbon_stored: total amount of CARBON minted; the sum of CARBON and CarbonSINK\n  in circulation.",
                 "operationId": "get_carbon_stats",
                 "responses": {
                     "200": {
@@ -715,6 +730,7 @@
                     "account"
                 ],
                 "summary": "List sinking transactions for the given recipient account.",
+                "description": "Return paginated sinking (CARBON -> CarbonSINK) transactions for a recipient.\n\nOptional filtering by finalized (retirement completed) is supported.\n\nReturns:\n- SinkTxListResponse containing transactions and paging information.",
                 "operationId": "get_sink_txs_for_recipient",
                 "parameters": [
                     {
@@ -724,10 +740,10 @@
                         "schema": {
                             "type": "string",
                             "pattern": "^[GMC][A-Z2-7]{55}$",
-                            "description": "the address by which sinking transactions are filtered",
+                            "description": "Only show transactions for the given recipient address.",
                             "title": "Recipient Address"
                         },
-                        "description": "the address by which sinking transactions are filtered"
+                        "description": "Only show transactions for the given recipient address."
                     },
                     {
                         "name": "finalized",
@@ -742,8 +758,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter by retirement status.",
                             "title": "Finalized"
-                        }
+                        },
+                        "description": "Filter by retirement status."
                     },
                     {
                         "name": "cursor",
@@ -761,8 +779,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Specify which cursor the page starts with",
                             "title": "Cursor"
-                        }
+                        },
+                        "description": "Specify which cursor the page starts with"
                     },
                     {
                         "name": "limit",
@@ -777,8 +797,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "The maximum number of items per page",
                             "title": "Limit"
-                        }
+                        },
+                        "description": "The maximum number of items per page"
                     },
                     {
                         "name": "order",
@@ -790,9 +812,11 @@
                                 "desc"
                             ],
                             "type": "string",
+                            "description": "Use ascending or descending order for pagination",
                             "default": "desc",
                             "title": "Order"
-                        }
+                        },
+                        "description": "Use ascending or descending order for pagination"
                     }
                 ],
                 "responses": {
@@ -831,6 +855,7 @@
                     "account"
                 ],
                 "summary": "List finalized retirements for the given beneficiary account.",
+                "description": "Return paginated finalized retirements (certificates) for a beneficiary.\n\nOptional filtering by impact project is supported.\n\nReturns:\n- RetirementListResponse containing retirements and paging information.",
                 "operationId": "get_retirements_for_beneficiary",
                 "parameters": [
                     {
@@ -840,10 +865,10 @@
                         "schema": {
                             "type": "string",
                             "pattern": "^[GMC][A-Z2-7]{55}$",
-                            "description": "the address which is the beneficiary of the retirements",
+                            "description": "Only show retirements for the given beneficiary address.",
                             "title": "Beneficiary Address"
                         },
-                        "description": "the address which is the beneficiary of the retirements"
+                        "description": "Only show retirements for the given beneficiary address."
                     },
                     {
                         "name": "project",
@@ -858,8 +883,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter by impact project.",
                             "title": "Project"
-                        }
+                        },
+                        "description": "Filter by impact project."
                     },
                     {
                         "name": "cursor",
@@ -877,8 +904,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Specify which cursor the page starts with",
                             "title": "Cursor"
-                        }
+                        },
+                        "description": "Specify which cursor the page starts with"
                     },
                     {
                         "name": "limit",
@@ -893,8 +922,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "The maximum number of items per page",
                             "title": "Limit"
-                        }
+                        },
+                        "description": "The maximum number of items per page"
                     },
                     {
                         "name": "order",
@@ -906,9 +937,11 @@
                                 "desc"
                             ],
                             "type": "string",
+                            "description": "Use ascending or descending order for pagination",
                             "default": "desc",
                             "title": "Order"
-                        }
+                        },
+                        "description": "Use ascending or descending order for pagination"
                     }
                 ],
                 "responses": {
@@ -947,6 +980,7 @@
                     "account"
                 ],
                 "summary": "Get filtered stats for the given recipient account.",
+                "description": "Return aggregated CARBON statistics for a single recipient.\n\nReturns:\n- CarbonStats with carbon_sunk, carbon_retired and carbon_pending filtered to the recipient.",
                 "operationId": "get_recipient_stats",
                 "parameters": [
                     {
@@ -998,6 +1032,7 @@
                     "account"
                 ],
                 "summary": "Create a new recipient in our database.",
+                "description": "Create a recipient record. Requires SEP-10 authorization for the provided address.\n\nReturns:\n- RecipientCreatedResponse with the created recipient.",
                 "operationId": "create_recipient",
                 "requestBody": {
                     "content": {
@@ -1060,6 +1095,7 @@
                     "account"
                 ],
                 "summary": "Fetch a single recipient from our database.",
+                "description": "Retrieve a recipient record.\n\nReturns:\n- Recipient record as stored in the database.",
                 "operationId": "get_recipient",
                 "security": [
                     {
@@ -1127,6 +1163,7 @@
                     "account"
                 ],
                 "summary": "Update any of a recipient's fields; modified_at is automatically set.",
+                "description": "Update mutable fields of a recipient. `modified_at` is automatically set.\n\nReturns:\n- Updated Recipient record.",
                 "operationId": "update_recipient",
                 "security": [
                     {
@@ -1204,6 +1241,7 @@
                     "account"
                 ],
                 "summary": "Delete a recipient from our database.",
+                "description": "Delete a recipient record.\n\nReturns:\n- 204 No Content on success.",
                 "operationId": "delete_recipient",
                 "security": [
                     {
@@ -1266,6 +1304,7 @@
                     "account"
                 ],
                 "summary": "Request the retirement of the whole credits in this account's pending balance.",
+                "description": "Request retirement of whole VCUs from the recipient's pending balance.\n\nEnqueues an asynchronous retirement task and sends notification emails.\n\nReturns:\n- RequestCertificateResponse with account, certificate_amount and the remaining fractional pending balance.\n\nErrors:\n- 400 if there are no whole credits available to request.",
                 "operationId": "request_certificate",
                 "security": [
                     {
@@ -1334,7 +1373,8 @@
                 "tags": [
                     "estimate"
                 ],
-                "summary": "Estimate the CO2 emissions for a flight between two airports.",
+                "summary": "Estimate the CO₂ emissions for a flight between two airports.",
+                "description": "Estimate per-passenger CO₂ emissions for a flight between two airports.\n\nReturns the airport names, the great-circle distance in kilometers, and an estimated\nCO₂ emission per passenger. The estimate uses an internal aircraft model and\napplies seat- and cabin-class adjustments; it should be treated as an approximation.",
                 "operationId": "get_flight_estimate",
                 "parameters": [
                     {
@@ -1345,8 +1385,10 @@
                             "type": "string",
                             "minLength": 3,
                             "maxLength": 3,
+                            "description": "IATA code of the departure airport",
                             "title": "Departure"
-                        }
+                        },
+                        "description": "IATA code of the departure airport"
                     },
                     {
                         "name": "destination",
@@ -1356,8 +1398,10 @@
                             "type": "string",
                             "minLength": 3,
                             "maxLength": 3,
+                            "description": "IATA code of the destination airport",
                             "title": "Destination"
-                        }
+                        },
+                        "description": "IATA code of the destination airport"
                     },
                     {
                         "name": "cabin_class",
@@ -1365,8 +1409,10 @@
                         "required": false,
                         "schema": {
                             "$ref": "#/components/schemas/CabinClass",
+                            "description": "Cabin class for the passenger",
                             "default": "economy"
-                        }
+                        },
+                        "description": "Cabin class for the passenger"
                     },
                     {
                         "name": "trip_type",
@@ -1378,9 +1424,11 @@
                                 "round-trip"
                             ],
                             "type": "string",
+                            "description": "One-way or round-trip",
                             "default": "round-trip",
                             "title": "Trip Type"
-                        }
+                        },
+                        "description": "One-way or round-trip"
                     }
                 ],
                 "responses": {
@@ -1421,7 +1469,8 @@
                 "tags": [
                     "mint"
                 ],
-                "summary": "List minted blocks (current and past inventory).",
+                "summary": "View Stellarcarbon's current or historical inventory of eco-credits.",
+                "description": "Retrieve a summary of minted blocks and their remaining credits.",
                 "operationId": "get_minted_block_list",
                 "parameters": [
                     {
@@ -1430,9 +1479,11 @@
                         "required": false,
                         "schema": {
                             "type": "boolean",
+                            "description": "Don't show empty minted blocks.",
                             "default": false,
                             "title": "Omit Empty"
-                        }
+                        },
+                        "description": "Don't show empty minted blocks."
                     },
                     {
                         "name": "until_date",
@@ -1448,8 +1499,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Reconstruct the inventory on the given date.",
                             "title": "Until Date"
-                        }
+                        },
+                        "description": "Reconstruct the inventory on the given date."
                     }
                 ],
                 "responses": {
@@ -1487,7 +1540,8 @@
                 "tags": [
                     "retirement"
                 ],
-                "summary": "List finalized retirements.",
+                "summary": "View finalized retirements and the attributes of the retired credits.",
+                "description": "Return a paginated list of finalized retirements along with a total retired amount.\n\nEach retirement item includes certificate metadata, beneficiary information, associated\nimpact project and the retired instrument attributes. Filters for beneficiary, date range,\nand project may be applied to narrow results. This endpoint is useful for browsing historical\nretirement activity and retrieving aggregate totals.",
                 "operationId": "get_retirement_list",
                 "parameters": [
                     {
@@ -1503,8 +1557,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Only show retirements for the given beneficiary address.",
                             "title": "For Beneficiary"
-                        }
+                        },
+                        "description": "Only show retirements for the given beneficiary address."
                     },
                     {
                         "name": "from_date",
@@ -1520,8 +1576,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter retirements that happened on or after the given date.",
                             "title": "From Date"
-                        }
+                        },
+                        "description": "Filter retirements that happened on or after the given date."
                     },
                     {
                         "name": "before_date",
@@ -1537,8 +1595,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter retirements that happened before the given date.",
                             "title": "Before Date"
-                        }
+                        },
+                        "description": "Filter retirements that happened before the given date."
                     },
                     {
                         "name": "project",
@@ -1553,8 +1613,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter by impact project.",
                             "title": "Project"
-                        }
+                        },
+                        "description": "Filter by impact project."
                     },
                     {
                         "name": "cursor",
@@ -1572,8 +1634,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Specify which cursor the page starts with",
                             "title": "Cursor"
-                        }
+                        },
+                        "description": "Specify which cursor the page starts with"
                     },
                     {
                         "name": "limit",
@@ -1588,8 +1652,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "The maximum number of items per page",
                             "title": "Limit"
-                        }
+                        },
+                        "description": "The maximum number of items per page"
                     },
                     {
                         "name": "order",
@@ -1601,9 +1667,11 @@
                                 "desc"
                             ],
                             "type": "string",
+                            "description": "Use ascending or descending order for pagination",
                             "default": "desc",
                             "title": "Order"
-                        }
+                        },
+                        "description": "Use ascending or descending order for pagination"
                     }
                 ],
                 "responses": {
@@ -1642,6 +1710,7 @@
                     "retirement"
                 ],
                 "summary": "Fetch a single retirement and its instrument details.",
+                "description": "Fetch detailed information for a single retirement certificate.\n\nThe response includes the retirement's certificate metadata, the retired instrument's\nattributes, the blocks from which credits were retired, and a list of sink statuses\nassociated with the retirement. If the requested certificate ID does not exist a 404\nerror is returned.",
                 "operationId": "get_retirement_item",
                 "parameters": [
                     {
@@ -1694,7 +1763,8 @@
                 "tags": [
                     "sink"
                 ],
-                "summary": "List sinking transactions and their retirement status.",
+                "summary": "View sinking transactions and their retirement status.",
+                "description": "Return a paginated list of sinking transactions together with aggregate totals.\n\nEach transaction record includes source and destination asset details, funder and recipient\ninformation, memo data, retirement summaries and a flag indicating whether retirement has\nbeen finalized. The response also includes totals for sunk, retired and pending CARBON.",
                 "operationId": "get_sink_tx_list",
                 "parameters": [
                     {
@@ -1710,8 +1780,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Only show transactions for the given funder address.",
                             "title": "For Funder"
-                        }
+                        },
+                        "description": "Only show transactions for the given funder address."
                     },
                     {
                         "name": "for_recipient",
@@ -1726,8 +1798,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Only show transactions for the given recipient address.",
                             "title": "For Recipient"
-                        }
+                        },
+                        "description": "Only show transactions for the given recipient address."
                     },
                     {
                         "name": "from_date",
@@ -1743,8 +1817,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter transactions that happened on or after the given date.",
                             "title": "From Date"
-                        }
+                        },
+                        "description": "Filter transactions that happened on or after the given date."
                     },
                     {
                         "name": "before_date",
@@ -1760,8 +1836,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter transactions that happened before the given date.",
                             "title": "Before Date"
-                        }
+                        },
+                        "description": "Filter transactions that happened before the given date."
                     },
                     {
                         "name": "finalized",
@@ -1776,8 +1854,28 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Filter by retirement status.",
                             "title": "Finalized"
-                        }
+                        },
+                        "description": "Filter by retirement status."
+                    },
+                    {
+                        "name": "contract_call",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Only show transactions done through sorocarbon, or exclude them.",
+                            "title": "Contract Call"
+                        },
+                        "description": "Only show transactions done through sorocarbon, or exclude them."
                     },
                     {
                         "name": "cursor",
@@ -1795,8 +1893,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "Specify which cursor the page starts with",
                             "title": "Cursor"
-                        }
+                        },
+                        "description": "Specify which cursor the page starts with"
                     },
                     {
                         "name": "limit",
@@ -1811,8 +1911,10 @@
                                     "type": "null"
                                 }
                             ],
+                            "description": "The maximum number of items per page",
                             "title": "Limit"
-                        }
+                        },
+                        "description": "The maximum number of items per page"
                     },
                     {
                         "name": "order",
@@ -1824,9 +1926,11 @@
                                 "desc"
                             ],
                             "type": "string",
+                            "description": "Use ascending or descending order for pagination",
                             "default": "desc",
                             "title": "Order"
-                        }
+                        },
+                        "description": "Use ascending or descending order for pagination"
                     }
                 ],
                 "responses": {
@@ -1865,6 +1969,7 @@
                     "sink"
                 ],
                 "summary": "Fetch a single sink transaction and its retirement status.",
+                "description": "Fetch a single sinking transaction and its retirement status.\n\nThe returned record is a transformed view of the stored transaction that includes\nnested source/destination asset objects, memo details, a list of retirement summaries,\nand a boolean indicating whether retirement has been finalized. A 404 error is returned\nif the transaction is not present in the database.",
                 "operationId": "get_sink_tx_item",
                 "parameters": [
                     {
@@ -2004,12 +2109,14 @@
                     "address": {
                         "type": "string",
                         "pattern": "^[GMC][A-Z2-7]{55}$",
-                        "title": "the address that is used to identify this recipient"
+                        "title": "the address that is used to identify this recipient",
+                        "description": "Stellar account address (G... or M...) used to identify the recipient."
                     },
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "title": "the recipient's email address"
+                        "title": "the recipient's email address",
+                        "description": "Contact email for the recipient, provided to Verra upon retirement."
                     },
                     "name": {
                         "anyOf": [
@@ -2021,7 +2128,8 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "the recipient's name"
+                        "title": "the recipient's name",
+                        "description": "Optional display name for the recipient."
                     }
                 },
                 "type": "object",
@@ -2058,19 +2166,23 @@
                 "properties": {
                     "departure_name": {
                         "type": "string",
-                        "title": "Departure Name"
+                        "title": "departure airport name",
+                        "description": "Full name of the departure airport (from the IATA code)."
                     },
                     "destination_name": {
                         "type": "string",
-                        "title": "Destination Name"
+                        "title": "destination airport name",
+                        "description": "Full name of the destination airport (from the IATA code)."
                     },
                     "distance_km": {
                         "type": "string",
-                        "title": "Distance Km"
+                        "title": "distance (km)",
+                        "description": "Great-circle distance flown between the two airports in kilometers."
                     },
                     "co2_tonnes": {
                         "type": "string",
-                        "title": "Co2 Tonnes"
+                        "title": "estimated tCO₂",
+                        "description": "Estimated CO₂ emissions per passenger for the trip in metric tons."
                     }
                 },
                 "type": "object",
@@ -2359,12 +2471,14 @@
                     "modified_at": {
                         "type": "string",
                         "format": "date-time",
-                        "title": "the time at which this recipient was last updated"
+                        "title": "the time at which this recipient was last updated",
+                        "description": "UTC timestamp when this recipient was last modified."
                     },
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "title": "the recipient's email address"
+                        "title": "the recipient's email address",
+                        "description": "Contact email for the recipient, provided to Verra upon retirement."
                     },
                     "name": {
                         "anyOf": [
@@ -2376,7 +2490,8 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "the recipient's name"
+                        "title": "the recipient's name",
+                        "description": "Optional display name for the recipient."
                     }
                 },
                 "type": "object",
@@ -2391,14 +2506,18 @@
                     "address": {
                         "type": "string",
                         "pattern": "^[GMC][A-Z2-7]{55}$",
-                        "title": "the address that is used to identify this recipient"
+                        "title": "the address that is used to identify this recipient",
+                        "description": "Stellar account address (G... or M...) used to identify the recipient."
                     },
                     "message": {
                         "type": "string",
-                        "title": "Message"
+                        "title": "creation message",
+                        "description": "Human-friendly message about the created recipient."
                     },
                     "recipient": {
-                        "$ref": "#/components/schemas/Recipient"
+                        "$ref": "#/components/schemas/Recipient",
+                        "title": "created recipient",
+                        "description": "The created recipient record."
                     }
                 },
                 "type": "object",
@@ -2414,7 +2533,8 @@
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "title": "the recipient's email address"
+                        "title": "the recipient's email address",
+                        "description": "Contact email for the recipient, provided to Verra upon retirement."
                     },
                     "name": {
                         "anyOf": [
@@ -2426,7 +2546,8 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "the recipient's name"
+                        "title": "the recipient's name",
+                        "description": "Optional display name for the recipient."
                     }
                 },
                 "type": "object",
@@ -2436,15 +2557,18 @@
                 "properties": {
                     "account": {
                         "type": "string",
-                        "title": "Account"
+                        "title": "requesting account",
+                        "description": "The account that requested the certificate."
                     },
                     "certificate_amount": {
                         "type": "integer",
-                        "title": "Certificate Amount"
+                        "title": "certificate amount",
+                        "description": "Integer number of credits requested for retirement."
                     },
                     "pending_balance_after_retirement": {
                         "type": "string",
-                        "title": "Pending Balance After Retirement"
+                        "title": "pending balance after retirement",
+                        "description": "Remaining fractional pending balance after whole VCUs are retired."
                     }
                 },
                 "type": "object",
@@ -2642,11 +2766,13 @@
                 "properties": {
                     "transaction": {
                         "type": "string",
-                        "title": "Transaction"
+                        "title": "challenge transaction",
+                        "description": "Base64-encoded TransactionEnvelope XDR that the client must sign."
                     },
                     "network_passphrase": {
                         "type": "string",
-                        "title": "Network Passphrase"
+                        "title": "network passphrase",
+                        "description": "The Stellar network passphrase to be used when signing the challenge."
                     }
                 },
                 "type": "object",
@@ -2673,7 +2799,8 @@
                 "properties": {
                     "token": {
                         "type": "string",
-                        "title": "Token"
+                        "title": "authentication token",
+                        "description": "HS256-signed JWT issued after successful SEP-10 challenge validation."
                     }
                 },
                 "type": "object",
@@ -2718,9 +2845,9 @@
                     "memo": {
                         "$ref": "#/components/schemas/MemoItem"
                     },
-                    "paging_token": {
+                    "toid": {
                         "type": "string",
-                        "title": "Paging Token"
+                        "title": "Toid"
                     },
                     "retirement_finalized": {
                         "type": "boolean",
@@ -2745,7 +2872,7 @@
                     "dest_asset",
                     "vcs_project_id",
                     "memo",
-                    "paging_token",
+                    "toid",
                     "retirement_finalized",
                     "retirements"
                 ],
@@ -2962,7 +3089,8 @@
                     "transaction": {
                         "type": "string",
                         "minLength": 25,
-                        "title": "Transaction"
+                        "title": "signed challenge transaction",
+                        "description": "The signed challenge TransactionEnvelope XDR (base64)."
                     }
                 },
                 "type": "object",

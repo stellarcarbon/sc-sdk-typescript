@@ -75,12 +75,14 @@ export const CreateRecipientPayloadSchema = {
         address: {
             type: 'string',
             pattern: '^[GMC][A-Z2-7]{55}$',
-            title: 'the address that is used to identify this recipient'
+            title: 'the address that is used to identify this recipient',
+            description: 'Stellar account address (G... or M...) used to identify the recipient.'
         },
         email: {
             type: 'string',
             format: 'email',
-            title: "the recipient's email address"
+            title: "the recipient's email address",
+            description: 'Contact email for the recipient, provided to Verra upon retirement.'
         },
         name: {
             anyOf: [
@@ -92,7 +94,8 @@ export const CreateRecipientPayloadSchema = {
                     type: 'null'
                 }
             ],
-            title: "the recipient's name"
+            title: "the recipient's name",
+            description: 'Optional display name for the recipient.'
         }
     },
     type: 'object',
@@ -124,19 +127,23 @@ export const FlightEstimateResponseSchema = {
     properties: {
         departure_name: {
             type: 'string',
-            title: 'Departure Name'
+            title: 'departure airport name',
+            description: 'Full name of the departure airport (from the IATA code).'
         },
         destination_name: {
             type: 'string',
-            title: 'Destination Name'
+            title: 'destination airport name',
+            description: 'Full name of the destination airport (from the IATA code).'
         },
         distance_km: {
             type: 'string',
-            title: 'Distance Km'
+            title: 'distance (km)',
+            description: 'Great-circle distance flown between the two airports in kilometers.'
         },
         co2_tonnes: {
             type: 'string',
-            title: 'Co2 Tonnes'
+            title: 'estimated tCO₂',
+            description: 'Estimated CO₂ emissions per passenger for the trip in metric tons.'
         }
     },
     type: 'object',
@@ -391,12 +398,14 @@ export const RecipientSchema = {
         modified_at: {
             type: 'string',
             format: 'date-time',
-            title: 'the time at which this recipient was last updated'
+            title: 'the time at which this recipient was last updated',
+            description: 'UTC timestamp when this recipient was last modified.'
         },
         email: {
             type: 'string',
             format: 'email',
-            title: "the recipient's email address"
+            title: "the recipient's email address",
+            description: 'Contact email for the recipient, provided to Verra upon retirement.'
         },
         name: {
             anyOf: [
@@ -408,7 +417,8 @@ export const RecipientSchema = {
                     type: 'null'
                 }
             ],
-            title: "the recipient's name"
+            title: "the recipient's name",
+            description: 'Optional display name for the recipient.'
         }
     },
     type: 'object',
@@ -421,14 +431,18 @@ export const RecipientCreatedResponseSchema = {
         address: {
             type: 'string',
             pattern: '^[GMC][A-Z2-7]{55}$',
-            title: 'the address that is used to identify this recipient'
+            title: 'the address that is used to identify this recipient',
+            description: 'Stellar account address (G... or M...) used to identify the recipient.'
         },
         message: {
             type: 'string',
-            title: 'Message'
+            title: 'creation message',
+            description: 'Human-friendly message about the created recipient.'
         },
         recipient: {
-            '$ref': '#/components/schemas/Recipient'
+            '$ref': '#/components/schemas/Recipient',
+            title: 'created recipient',
+            description: 'The created recipient record.'
         }
     },
     type: 'object',
@@ -441,7 +455,8 @@ export const RecipientFieldsPatchSchema = {
         email: {
             type: 'string',
             format: 'email',
-            title: "the recipient's email address"
+            title: "the recipient's email address",
+            description: 'Contact email for the recipient, provided to Verra upon retirement.'
         },
         name: {
             anyOf: [
@@ -453,7 +468,8 @@ export const RecipientFieldsPatchSchema = {
                     type: 'null'
                 }
             ],
-            title: "the recipient's name"
+            title: "the recipient's name",
+            description: 'Optional display name for the recipient.'
         }
     },
     type: 'object',
@@ -464,15 +480,18 @@ export const RequestCertificateResponseSchema = {
     properties: {
         account: {
             type: 'string',
-            title: 'Account'
+            title: 'requesting account',
+            description: 'The account that requested the certificate.'
         },
         certificate_amount: {
             type: 'integer',
-            title: 'Certificate Amount'
+            title: 'certificate amount',
+            description: 'Integer number of credits requested for retirement.'
         },
         pending_balance_after_retirement: {
             type: 'string',
-            title: 'Pending Balance After Retirement'
+            title: 'pending balance after retirement',
+            description: 'Remaining fractional pending balance after whole VCUs are retired.'
         }
     },
     type: 'object',
@@ -640,11 +659,13 @@ export const SEP10ChallengeResponseSchema = {
     properties: {
         transaction: {
             type: 'string',
-            title: 'Transaction'
+            title: 'challenge transaction',
+            description: 'Base64-encoded TransactionEnvelope XDR that the client must sign.'
         },
         network_passphrase: {
             type: 'string',
-            title: 'Network Passphrase'
+            title: 'network passphrase',
+            description: 'The Stellar network passphrase to be used when signing the challenge.'
         }
     },
     type: 'object',
@@ -668,7 +689,8 @@ export const SEP10TokenResponseSchema = {
     properties: {
         token: {
             type: 'string',
-            title: 'Token'
+            title: 'authentication token',
+            description: 'HS256-signed JWT issued after successful SEP-10 challenge validation.'
         }
     },
     type: 'object',
@@ -712,9 +734,9 @@ export const SinkTxItemSchema = {
         memo: {
             '$ref': '#/components/schemas/MemoItem'
         },
-        paging_token: {
+        toid: {
             type: 'string',
-            title: 'Paging Token'
+            title: 'Toid'
         },
         retirement_finalized: {
             type: 'boolean',
@@ -729,7 +751,7 @@ export const SinkTxItemSchema = {
         }
     },
     type: 'object',
-    required: ['hash', 'created_at', 'funder', 'recipient', 'carbon_amount', 'source_asset', 'dest_asset', 'vcs_project_id', 'memo', 'paging_token', 'retirement_finalized', 'retirements'],
+    required: ['hash', 'created_at', 'funder', 'recipient', 'carbon_amount', 'source_asset', 'dest_asset', 'vcs_project_id', 'memo', 'toid', 'retirement_finalized', 'retirements'],
     title: 'SinkTxItem'
 } as const;
 
@@ -918,7 +940,8 @@ export const ValidateChallengeBodySchema = {
         transaction: {
             type: 'string',
             minLength: 25,
-            title: 'Transaction'
+            title: 'signed challenge transaction',
+            description: 'The signed challenge TransactionEnvelope XDR (base64).'
         }
     },
     type: 'object',
