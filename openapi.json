@@ -4,7 +4,7 @@
         "title": "Stellarcarbon API",
         "summary": "Protect the rainforest with Stellarcarbon. Breathing space, preserved.",
         "description": "This API is ideal for developers and businesses looking to integrate CO₂ compensation into their existing products. It is permissionless: you don't need an API key. We publish an OpenAPI schema which can be used to automatically generate API clients for many programming languages, making your integration easy to set up and maintain.\n\nSee the API in action within our dApp: <https://new.stellarcarbon.io>\n\nThere is an official SDK based on our OpenAPI schema for JS/TS: <https://www.npmjs.com/package/@stellarcarbon/sc-sdk>\n\nThe interactive documentation below is organized into categories. It specifies — for each endpoint — the request and response schemas. Use the \"try it out\" button to unlock the form fields, and confirm with \"execute\" to get an actual response from the API.",
-        "version": "0.22.0"
+        "version": "0.23.0"
     },
     "paths": {
         "/auth/sep-10": {
@@ -274,7 +274,8 @@
                                     "maximum": 1000
                                 },
                                 {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
                                 }
                             ],
                             "description": "requested amount of CARBON",
@@ -371,7 +372,8 @@
                                     "maximum": 10000
                                 },
                                 {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
                                 }
                             ],
                             "description": "requested amount of USD",
@@ -496,7 +498,8 @@
                                     "type": "number"
                                 },
                                 {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
                                 }
                             ],
                             "description": "the amount of CARBON to sink",
@@ -1058,7 +1061,7 @@
                     "400": {
                         "description": "The request you sent was invalid in some way"
                     },
-                    "403": {
+                    "401": {
                         "description": "Authorization header is missing or malformed.",
                         "content": {
                             "application/json": {
@@ -1130,7 +1133,7 @@
                     "400": {
                         "description": "The request you sent was invalid in some way"
                     },
-                    "403": {
+                    "401": {
                         "description": "Authorization header is missing or malformed.",
                         "content": {
                             "application/json": {
@@ -1208,7 +1211,7 @@
                     "400": {
                         "description": "The request you sent was invalid in some way"
                     },
-                    "403": {
+                    "401": {
                         "description": "Authorization header is missing or malformed.",
                         "content": {
                             "application/json": {
@@ -1269,7 +1272,7 @@
                     "400": {
                         "description": "The request you sent was invalid in some way"
                     },
-                    "403": {
+                    "401": {
                         "description": "Authorization header is missing or malformed.",
                         "content": {
                             "application/json": {
@@ -1339,7 +1342,7 @@
                     "400": {
                         "description": "The request you sent was invalid in some way"
                     },
-                    "403": {
+                    "401": {
                         "description": "Authorization header is missing or malformed.",
                         "content": {
                             "application/json": {
@@ -2176,11 +2179,13 @@
                     },
                     "distance_km": {
                         "type": "string",
+                        "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                         "title": "distance (km)",
                         "description": "Great-circle distance flown between the two airports in kilometers."
                     },
                     "co2_tonnes": {
                         "type": "string",
+                        "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                         "title": "estimated tCO₂",
                         "description": "Estimated CO₂ emissions per passenger for the trip in metric tons."
                     }
