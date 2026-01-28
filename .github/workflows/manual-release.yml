@@ -8,6 +8,10 @@ on:
         required: true
         default: "true"
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   release:
     name: 🚀 Release package
