@@ -76,5 +76,3 @@ jobs:
             echo "=== DRY RUN ==="
             npm publish --dry-run --access public
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
