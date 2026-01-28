@@ -8,7 +8,7 @@
     "esModuleInterop": true,
 
     // but turn off the bits that cause your TS2322 error:
-    "strictFunctionTypes": false,
+    "strictFunctionTypes": true,
     "strictNullChecks": false,
 
     // still skip type‐checking of external .d.ts
